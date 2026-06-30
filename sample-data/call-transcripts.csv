@@ -1,0 +1,3 @@
+call_id,transcript,summary,customer_email,call_date,duration_seconds,agent,sentiment
+CALL-001,"Rep: Thanks for calling FlowStack support. Customer: Our SSO broke after the update.","Customer blocked on SSO login after release",it-admin@acmecorp.com,2025-05-11T15:00:00Z,1240,jordan.p,negative
+CALL-002,"Rep: How can I help? Customer: We love the new automation builder.","Positive feedback on automation features",ops@umbrella.co,2025-05-12T09:30:00Z,680,sam.k,positive

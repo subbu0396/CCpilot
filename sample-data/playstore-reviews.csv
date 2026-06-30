@@ -1,0 +1,3 @@
+review_id,rating,content,user_id,review_date,app_version
+RVW-001,2,"App crashes when opening dashboard",user_abc,2025-05-10T10:00:00Z,3.2.1
+RVW-002,5,"Best workflow tool we have used",user_def,2025-05-11T14:30:00Z,3.2.1

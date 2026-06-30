@@ -1,0 +1,3 @@
+review_id,title,content,rating,reviewer,review_date,platform,verified
+REV-001,Great integrations,Love how easy it is to connect Slack and Jira,5,Jane D.,2025-05-09T12:00:00Z,G2,true
+REV-002,Slow onboarding,Setup took our team two weeks longer than expected,3,Mike R.,2025-05-10T16:00:00Z,Trustpilot,true

@@ -1,0 +1,6 @@
+id,subject,description,status,priority,tags,customer_email,created_at
+TKT-1001,Billing discrepancy on annual plan,"We were charged twice for our Team plan renewal. Invoice #INV-4421 shows duplicate line items.",open,high,"billing,duplicate-charge",sarah.chen@northwind.io,2025-05-12T14:22:00Z
+TKT-1002,SSO login broken after update,"Users on Okta SSO cannot log in since yesterday's release. Error: SAML assertion invalid.",open,urgent,"sso,auth,regression",it-admin@acmecorp.com,2025-05-13T09:05:00Z
+TKT-1003,Feature request: bulk export,"Need ability to export all project data to CSV for compliance audit. Current one-by-one export is too slow.",pending,normal,"feature-request,export,compliance",compliance@globex.com,2025-05-14T16:40:00Z
+TKT-1004,Mobile app crashes on dashboard,"App crashes immediately when opening the analytics dashboard on iOS 17. Works fine on Android.",open,high,"mobile,crash,ios",mobile.lead@initech.com,2025-05-15T11:18:00Z
+TKT-1005,Slow report generation,"Monthly usage reports take 45+ minutes to generate for accounts with 500+ users.",open,normal,"performance,reports",ops@umbrella.co,2025-05-16T08:30:00Z

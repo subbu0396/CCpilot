@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "ccpilot-ingestion": {
+      "command": "npx",
+      "args": ["tsx", "src/index.ts"],
+      "cwd": "${workspaceFolder}/mcp-server",
+      "env": {
+        "SUPABASE_URL": "${env:SUPABASE_URL}",
+        "SUPABASE_SERVICE_ROLE_KEY": "${env:SUPABASE_SERVICE_ROLE_KEY}"
+      }
+    }
+  }
+}
