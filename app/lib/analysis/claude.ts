@@ -50,7 +50,13 @@ export async function callClaudeJson<T>(options: {
     ? raw.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "")
     : raw;
 
-  return JSON.parse(jsonStr) as T;
+  try {
+    return JSON.parse(jsonStr) as T;
+  } catch {
+    throw new Error(
+      `Claude returned invalid JSON. Preview: ${jsonStr.slice(0, 120)}`
+    );
+  }
 }
 
 export function chunk<T>(items: T[], size: number): T[][] {

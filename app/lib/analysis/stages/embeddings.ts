@@ -1,33 +1,52 @@
 import { embedTexts, embeddingToPgVector } from "../voyage";
 import { createServerClient } from "@/lib/supabase/client";
-import { chunk } from "../claude";
 import type { FeedbackRow } from "../db";
 
-export async function runEmbeddings(items: FeedbackRow[]): Promise<number> {
-  if (items.length === 0) return 0;
+const BATCH_SIZE = 8;
 
-  const supabase = createServerClient();
-  const batches = chunk(items, 32);
-  let processed = 0;
-
-  for (const batch of batches) {
-    const texts = batch.map((i) => i.text.slice(0, 4000));
-    const embeddings = await embedTexts(texts);
-
-    for (let i = 0; i < batch.length; i++) {
-      const { error } = await supabase.from("feedback_embeddings").upsert(
-        {
-          feedback_item_id: batch[i].id,
-          embedding: embeddingToPgVector(embeddings[i]),
-          model: "voyage-3",
-        },
-        { onConflict: "feedback_item_id" }
-      );
-      if (!error) processed++;
-    }
+export async function runEmbeddingsBatch(
+  items: FeedbackRow[],
+  offset: number
+): Promise<{ processed: number; has_more: boolean; next_offset: number }> {
+  const batch = items.slice(offset, offset + BATCH_SIZE);
+  if (batch.length === 0) {
+    return { processed: 0, has_more: false, next_offset: offset };
   }
 
-  return processed;
+  const supabase = createServerClient();
+  const texts = batch.map((i) => i.text.slice(0, 4000));
+  const embeddings = await embedTexts(texts);
+
+  let processed = 0;
+  for (let i = 0; i < batch.length; i++) {
+    const { error } = await supabase.from("feedback_embeddings").upsert(
+      {
+        feedback_item_id: batch[i].id,
+        embedding: embeddingToPgVector(embeddings[i]),
+        model: "voyage-3",
+      },
+      { onConflict: "feedback_item_id" }
+    );
+    if (!error) processed++;
+  }
+
+  const next = offset + BATCH_SIZE;
+  return {
+    processed,
+    has_more: next < items.length,
+    next_offset: next,
+  };
+}
+
+export async function runEmbeddings(items: FeedbackRow[]): Promise<number> {
+  let total = 0;
+  let offset = 0;
+  while (offset < items.length) {
+    const r = await runEmbeddingsBatch(items, offset);
+    total += r.processed;
+    offset = r.next_offset;
+  }
+  return total;
 }
 
 export async function loadEmbeddings(

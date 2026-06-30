@@ -1,42 +1,23 @@
 import {
   clearAnalysisResults,
-  createAnalysisJob,
   createPipelineRun,
-  completeAnalysisJob,
-  failAnalysisJob,
   fetchAllFeedback,
   updatePipelineRun,
 } from "./db";
-import { runPainPointExtraction } from "./stages/pain-points";
-import { runChurnScoring } from "./stages/churn-risk";
-import { runEmbeddings } from "./stages/embeddings";
-import { runClustering } from "./stages/clustering";
-import { runFeatureExtraction } from "./stages/features";
+import { runPainPointBatch } from "./stages/pain-points";
+import { runChurnBatch } from "./stages/churn-risk";
+import { runEmbeddingsBatch } from "./stages/embeddings";
+import { runClusteringBatch } from "./stages/clustering";
+import { runFeatureBatch } from "./stages/features";
 import { runRoadmapGeneration } from "./stages/roadmap";
 import { ANALYSIS_STAGES, type AnalysisStage } from "./schemas";
 
-export type PipelineResult = {
-  pipeline_run_id: string;
-  stages: Record<string, { processed: number; duration_ms: number }>;
+export type StageBatchResult = {
+  processed: number;
+  has_more: boolean;
+  next_offset: number;
+  duration_ms: number;
 };
-
-async function runStageJob<T>(
-  stage: AnalysisStage,
-  fn: () => Promise<T>
-): Promise<T> {
-  const jobId = await createAnalysisJob(stage);
-  try {
-    const result = await fn();
-    await completeAnalysisJob(jobId, {
-      processed: typeof result === "number" ? result : 0,
-    });
-    return result;
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    await failAnalysisJob(jobId, message);
-    throw err;
-  }
-}
 
 export async function startPipeline(clearPrevious = true): Promise<{
   pipeline_run_id: string;
@@ -60,57 +41,74 @@ export async function startPipeline(clearPrevious = true): Promise<{
   };
 }
 
-export async function runPipelineStage(
+export async function runPipelineStageBatch(
   pipelineRunId: string,
-  stage: AnalysisStage
-): Promise<{ processed: number; duration_ms: number }> {
+  stage: AnalysisStage,
+  offset: number
+): Promise<StageBatchResult> {
   const items = await fetchAllFeedback();
   const start = Date.now();
 
-  const processed = await runStageJob(stage, async () => {
-    switch (stage) {
-      case "pain_points":
-        return runPainPointExtraction(items);
-      case "churn_risk":
-        return runChurnScoring(items);
-      case "embeddings":
-        return runEmbeddings(items);
-      case "clustering":
-        return runClustering(items, pipelineRunId);
-      case "features":
-        return runFeatureExtraction(pipelineRunId);
-      case "roadmap":
-        return runRoadmapGeneration(pipelineRunId);
-      default:
-        throw new Error(`Unknown stage: ${stage}`);
-    }
-  });
+  let batch: { processed: number; has_more: boolean; next_offset: number };
+
+  switch (stage) {
+    case "pain_points":
+      batch = await runPainPointBatch(items, offset);
+      break;
+    case "churn_risk":
+      batch = await runChurnBatch(items, offset);
+      break;
+    case "embeddings":
+      batch = await runEmbeddingsBatch(items, offset);
+      break;
+    case "clustering":
+      batch = await runClusteringBatch(items, pipelineRunId, offset);
+      break;
+    case "features":
+      batch = await runFeatureBatch(pipelineRunId, offset);
+      break;
+    case "roadmap":
+      batch = {
+        processed: await runRoadmapGeneration(pipelineRunId),
+        has_more: false,
+        next_offset: 0,
+      };
+      break;
+    default:
+      throw new Error(`Unknown stage: ${stage}`);
+  }
 
   const duration_ms = Date.now() - start;
 
-  const supabase = await import("@/lib/supabase/client").then((m) =>
-    m.createServerClient()
-  );
-  const { data: run } = await supabase
-    .from("analysis_pipeline_runs")
-    .select("stages_done")
-    .eq("id", pipelineRunId)
-    .single();
+  if (!batch.has_more) {
+    const supabase = await import("@/lib/supabase/client").then((m) =>
+      m.createServerClient()
+    );
+    const { data: run } = await supabase
+      .from("analysis_pipeline_runs")
+      .select("stages_done")
+      .eq("id", pipelineRunId)
+      .single();
 
-  const stagesDone = [...((run?.stages_done as string[]) ?? []), stage];
+    const stagesDone = [...((run?.stages_done as string[]) ?? []), stage];
 
-  await updatePipelineRun(pipelineRunId, {
-    current_stage: stage,
-    stages_done: stagesDone,
-    ...(stage === "roadmap"
-      ? {
-          status: "completed",
-          completed_at: new Date().toISOString(),
-        }
-      : {}),
-  });
+    await updatePipelineRun(pipelineRunId, {
+      current_stage: stage,
+      stages_done: stagesDone,
+      ...(stage === "roadmap"
+        ? {
+            status: "completed",
+            completed_at: new Date().toISOString(),
+          }
+        : {}),
+    });
+  } else {
+    await updatePipelineRun(pipelineRunId, {
+      current_stage: stage,
+    });
+  }
 
-  return { processed, duration_ms };
+  return { ...batch, duration_ms };
 }
 
 export async function failPipeline(pipelineRunId: string, message: string) {
@@ -119,27 +117,6 @@ export async function failPipeline(pipelineRunId: string, message: string) {
     error_message: message,
     completed_at: new Date().toISOString(),
   });
-}
-
-export async function runAnalysisPipeline(options?: {
-  clearPrevious?: boolean;
-}): Promise<PipelineResult> {
-  const { pipeline_run_id, stages } = await startPipeline(
-    options?.clearPrevious ?? true
-  );
-  const stageResults: Record<string, { processed: number; duration_ms: number }> =
-    {};
-
-  try {
-    for (const stage of stages) {
-      stageResults[stage] = await runPipelineStage(pipeline_run_id, stage);
-    }
-    return { pipeline_run_id, stages: stageResults };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    await failPipeline(pipeline_run_id, message);
-    throw err;
-  }
 }
 
 export { ANALYSIS_STAGES };

@@ -40,6 +40,7 @@ export async function updatePipelineRun(
     status?: string;
     current_stage?: string;
     stages_done?: string[];
+    payload?: Record<string, unknown>;
     error_message?: string;
     completed_at?: string;
   }

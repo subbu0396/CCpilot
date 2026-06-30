@@ -1,7 +1,6 @@
 import {
   failPipeline,
-  runAnalysisPipeline,
-  runPipelineStage,
+  runPipelineStageBatch,
   startPipeline,
   ANALYSIS_STAGES,
 } from "@/lib/analysis/pipeline";
@@ -10,7 +9,7 @@ import { createServerClient } from "@/lib/supabase/client";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   let pipelineRunId: string | undefined;
@@ -27,6 +26,7 @@ export async function POST(request: Request) {
 
     if (action === "stage") {
       const stage = body.stage as AnalysisStage;
+      const offset = Number(body.offset ?? 0);
 
       if (!pipelineRunId || !stage) {
         return NextResponse.json(
@@ -39,14 +39,15 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Invalid stage" }, { status: 400 });
       }
 
-      const result = await runPipelineStage(pipelineRunId, stage);
+      const result = await runPipelineStageBatch(
+        pipelineRunId,
+        stage,
+        offset
+      );
       return NextResponse.json({ stage, ...result });
     }
 
-    const result = await runAnalysisPipeline({
-      clearPrevious: body.clearPrevious !== false,
-    });
-    return NextResponse.json(result);
+    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Analysis failed";
     if (pipelineRunId) {

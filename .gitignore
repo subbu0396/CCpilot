@@ -10,3 +10,5 @@ dist/
 archive.zip
 redmi6.csv
 *.zip
+.vercel
+.env*

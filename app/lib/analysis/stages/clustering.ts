@@ -10,116 +10,157 @@ Given sample quotes from a cluster, produce a concise label (3-6 words) and a 2-
 
 const SCHEMA = `{ "label": "string", "summary": "string" }`;
 
-export async function runClustering(
+type ClusterGroups = string[][];
+
+async function getClusterGroups(
   items: FeedbackRow[],
   pipelineRunId: string
-): Promise<number> {
-  if (items.length === 0) return 0;
-
+): Promise<ClusterGroups> {
   const supabase = createServerClient();
+  const { data: run } = await supabase
+    .from("analysis_pipeline_runs")
+    .select("payload")
+    .eq("id", pipelineRunId)
+    .single();
+
+  const payload = (run?.payload ?? {}) as { cluster_groups?: ClusterGroups };
+  if (payload.cluster_groups?.length) {
+    return payload.cluster_groups;
+  }
+
   const itemIds = items.map((i) => i.id);
   const embedded = await loadEmbeddings(itemIds);
 
   if (embedded.length < 2) {
-    if (embedded.length === 1) {
-      await createSingleCluster(supabase, items, embedded[0].id, pipelineRunId);
-      return 1;
-    }
-    return 0;
+    const groups = embedded.length === 1 ? [[embedded[0].id]] : [];
+    await supabase
+      .from("analysis_pipeline_runs")
+      .update({ payload: { cluster_groups: groups } })
+      .eq("id", pipelineRunId);
+    return groups;
   }
 
   const k = optimalK(embedded.length);
   const vectors = embedded.map((e) => e.embedding);
   const assignments = kMeans(vectors, k);
 
-  const clusterGroups = new Map<number, string[]>();
+  const clusterGroups: ClusterGroups = [];
   for (let i = 0; i < embedded.length; i++) {
-    const clusterIdx = assignments[i];
-    const list = clusterGroups.get(clusterIdx) ?? [];
-    list.push(embedded[i].id);
-    clusterGroups.set(clusterIdx, list);
+    const idx = assignments[i];
+    if (!clusterGroups[idx]) clusterGroups[idx] = [];
+    clusterGroups[idx].push(embedded[i].id);
   }
 
-  // Load pain points for avg severity
+  const groups = clusterGroups.filter((g) => g && g.length > 0);
+  await supabase
+    .from("analysis_pipeline_runs")
+    .update({ payload: { cluster_groups: groups } })
+    .eq("id", pipelineRunId);
+
+  return groups;
+}
+
+async function labelCluster(
+  memberIds: string[],
+  items: FeedbackRow[],
+  pipelineRunId: string
+): Promise<number> {
+  const supabase = createServerClient();
+  const memberItems = items.filter((i) => memberIds.includes(i.id));
+  const quotes = memberItems.slice(0, 5).map((i) => i.text.slice(0, 300));
+
   const { data: painData } = await supabase
     .from("pain_points")
     .select("feedback_item_id, severity")
-    .in("feedback_item_id", itemIds);
+    .in("feedback_item_id", memberIds);
 
-  const severityMap = new Map(
-    (painData ?? []).map((p) => [p.feedback_item_id, p.severity as number])
-  );
+  const severities = (painData ?? [])
+    .map((p) => p.severity as number)
+    .filter((s) => s !== undefined);
+  const avgSeverity =
+    severities.length > 0
+      ? severities.reduce((a, b) => a + b, 0) / severities.length
+      : null;
 
-  let clustersCreated = 0;
+  let label = "General feedback";
+  let summary = quotes[0] ?? "Mixed customer feedback";
 
-  for (const memberIds of Array.from(clusterGroups.values())) {
-    if (memberIds.length === 0) continue;
-
-    const memberItems = items.filter((i) => memberIds.includes(i.id));
-    const quotes = memberItems.slice(0, 5).map((i) => i.text.slice(0, 300));
-    const severities = memberIds
-      .map((id) => severityMap.get(id))
-      .filter((s): s is number => s !== undefined);
-    const avgSeverity =
-      severities.length > 0
-        ? severities.reduce((a, b) => a + b, 0) / severities.length
-        : null;
-
+  if (memberIds.length > 1 || quotes[0]) {
     const labelResult = await callClaudeJson<{ label: string; summary: string }>({
       system: SYSTEM,
       user: `Label this cluster (${memberIds.length} items):\n${JSON.stringify({ quotes }, null, 2)}`,
       schemaHint: SCHEMA,
     });
-
     const parsed = ClusterLabelResult.safeParse(labelResult);
     if (!parsed.success) {
       throw new Error(`Cluster label validation failed: ${parsed.error.message}`);
     }
-
-    const clusterId = crypto.randomUUID();
-    await supabase.from("feedback_clusters").insert({
-      id: clusterId,
-      label: parsed.data.label,
-      summary: parsed.data.summary,
-      size: memberIds.length,
-      avg_severity: avgSeverity,
-      sample_quotes: quotes,
-      pipeline_run_id: pipelineRunId,
-    });
-
-    for (const fid of memberIds) {
-      await supabase.from("cluster_members").upsert({
-        cluster_id: clusterId,
-        feedback_item_id: fid,
-      });
-    }
-
-    clustersCreated++;
+    label = parsed.data.label;
+    summary = parsed.data.summary;
   }
-
-  return clustersCreated;
-}
-
-async function createSingleCluster(
-  supabase: ReturnType<typeof createServerClient>,
-  items: FeedbackRow[],
-  itemId: string,
-  pipelineRunId: string
-) {
-  const item = items.find((i) => i.id === itemId);
-  if (!item) return;
 
   const clusterId = crypto.randomUUID();
   await supabase.from("feedback_clusters").insert({
     id: clusterId,
-    label: "General feedback",
-    summary: item.text.slice(0, 300),
-    size: 1,
-    sample_quotes: [item.text.slice(0, 300)],
+    label,
+    summary,
+    size: memberIds.length,
+    avg_severity: avgSeverity,
+    sample_quotes: quotes,
     pipeline_run_id: pipelineRunId,
   });
-  await supabase.from("cluster_members").insert({
-    cluster_id: clusterId,
-    feedback_item_id: itemId,
-  });
+
+  for (const fid of memberIds) {
+    await supabase.from("cluster_members").upsert({
+      cluster_id: clusterId,
+      feedback_item_id: fid,
+    });
+  }
+
+  return 1;
+}
+
+export async function runClusteringBatch(
+  items: FeedbackRow[],
+  pipelineRunId: string,
+  clusterIndex: number
+): Promise<{ processed: number; has_more: boolean; next_offset: number }> {
+  const groups = await getClusterGroups(items, pipelineRunId);
+
+  if (groups.length === 0) {
+    return { processed: 0, has_more: false, next_offset: 0 };
+  }
+
+  if (clusterIndex >= groups.length) {
+    return { processed: 0, has_more: false, next_offset: clusterIndex };
+  }
+
+  const processed = await labelCluster(
+    groups[clusterIndex],
+    items,
+    pipelineRunId
+  );
+
+  const next = clusterIndex + 1;
+  return {
+    processed,
+    has_more: next < groups.length,
+    next_offset: next,
+  };
+}
+
+export async function runClustering(
+  items: FeedbackRow[],
+  pipelineRunId: string
+): Promise<number> {
+  let total = 0;
+  let idx = 0;
+  let result = await runClusteringBatch(items, pipelineRunId, idx);
+  total += result.processed;
+  while (result.has_more) {
+    idx = result.next_offset;
+    result = await runClusteringBatch(items, pipelineRunId, idx);
+    total += result.processed;
+  }
+  return total;
 }
