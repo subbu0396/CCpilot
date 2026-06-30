@@ -48,8 +48,19 @@ export default async function IngestionAdminPage() {
               : pipelineRun.started_at
                 ? `· started ${new Date(pipelineRun.started_at).toLocaleString()}`
                 : ""}
-            {pipelineRun.error_message && (
-              <span className="block text-destructive">{pipelineRun.error_message}</span>
+            {pipelineRun.status === "failed" && pipelineRun.error_message && (
+              <>
+                <span className="mt-1 block text-destructive">
+                  {pipelineRun.error_message.includes("payment method")
+                    ? "Voyage AI rate limit — add billing at dashboard.voyageai.com, wait 5–10 min, then click Re-run below."
+                    : pipelineRun.error_message.length > 280
+                      ? `${pipelineRun.error_message.slice(0, 280)}…`
+                      : pipelineRun.error_message}
+                </span>
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  This message is from the previous failed run. Click Re-run after fixing the issue.
+                </span>
+              </>
             )}
           </p>
         )}

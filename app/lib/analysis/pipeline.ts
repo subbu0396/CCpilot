@@ -12,6 +12,7 @@ import { runEmbeddingsBatch } from "./stages/embeddings";
 import { runClusteringBatch } from "./stages/clustering";
 import { runFeatureBatch } from "./stages/features";
 import { runRoadmapGeneration } from "./stages/roadmap";
+import { getVoyageBatchDelayMs } from "./voyage";
 import { ANALYSIS_STAGES, type AnalysisStage } from "./schemas";
 
 export type StageBatchResult = {
@@ -26,6 +27,7 @@ export async function startPipeline(clearPrevious = true): Promise<{
   item_count: number;
   total_feedback_count: number;
   max_items: number;
+  voyage_batch_delay_ms: number;
   stages: AnalysisStage[];
 }> {
   const [items, totalFeedbackCount] = await Promise.all([
@@ -48,6 +50,7 @@ export async function startPipeline(clearPrevious = true): Promise<{
     item_count: items.length,
     total_feedback_count: totalFeedbackCount,
     max_items: maxItems,
+    voyage_batch_delay_ms: getVoyageBatchDelayMs(),
     stages: [...ANALYSIS_STAGES],
   };
 }

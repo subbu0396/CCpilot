@@ -2,7 +2,7 @@ import { embedTexts, embeddingToPgVector } from "../voyage";
 import { createServerClient } from "@/lib/supabase/client";
 import type { FeedbackRow } from "../db";
 
-const BATCH_SIZE = 8;
+const BATCH_SIZE = 3;
 
 export async function runEmbeddingsBatch(
   items: FeedbackRow[],

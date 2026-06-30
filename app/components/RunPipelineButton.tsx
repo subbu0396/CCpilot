@@ -6,7 +6,7 @@ import { useState } from "react";
 const STAGES = [
   { id: "pain_points", label: "Pain points", batchSize: 3 },
   { id: "churn_risk", label: "Churn risk", batchSize: 3 },
-  { id: "embeddings", label: "Embeddings", batchSize: 8 },
+  { id: "embeddings", label: "Embeddings", batchSize: 3 },
   { id: "clustering", label: "Clustering", batchSize: 1 },
   { id: "features", label: "Features", batchSize: 1 },
   { id: "roadmap", label: "Roadmap", batchSize: 1 },
@@ -66,7 +66,8 @@ export function RunPipelineButton() {
     stageId: string,
     stageLabel: string,
     itemCount: number,
-    batchSize: number
+    batchSize: number,
+    batchDelayMs = 0
   ) {
     let offset = 0;
     let hasMore = true;
@@ -86,6 +87,13 @@ export function RunPipelineButton() {
 
       hasMore = Boolean(data.has_more);
       offset = Number(data.next_offset ?? 0);
+
+      if (hasMore && batchDelayMs > 0) {
+        setProgress(
+          `${stageLabel} · batch ${batchNum}/${totalBatches} · waiting for Voyage rate limit…`
+        );
+        await new Promise((r) => setTimeout(r, batchDelayMs));
+      }
     }
   }
 
@@ -107,6 +115,7 @@ export function RunPipelineButton() {
       const itemCount = Number(startData.item_count ?? 0);
       const totalFeedback = Number(startData.total_feedback_count ?? itemCount);
       const maxItems = Number(startData.max_items ?? itemCount);
+      const voyageDelay = Number(startData.voyage_batch_delay_ms ?? 22_000);
 
       if (totalFeedback > itemCount) {
         setItemNote(
@@ -125,7 +134,8 @@ export function RunPipelineButton() {
           stage.id === "clustering" || stage.id === "features"
             ? Math.min(itemCount, maxItems)
             : itemCount,
-          stage.batchSize
+          stage.batchSize,
+          stage.id === "embeddings" ? voyageDelay : 0
         );
       }
 
