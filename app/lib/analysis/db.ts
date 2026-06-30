@@ -10,15 +10,34 @@ export type FeedbackRow = {
   metadata: Record<string, unknown>;
 };
 
+export function getAnalysisMaxItems(): number {
+  const raw = process.env.ANALYSIS_MAX_ITEMS;
+  if (raw === undefined || raw === "") return 100;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 100;
+}
+
 export async function fetchAllFeedback(): Promise<FeedbackRow[]> {
   const supabase = createServerClient();
+  const maxItems = getAnalysisMaxItems();
+
   const { data, error } = await supabase
     .from("feedback_items")
     .select("id, source, text, rating, timestamp, customer_id, metadata")
-    .order("timestamp", { ascending: false });
+    .order("timestamp", { ascending: false })
+    .limit(maxItems);
 
   if (error) throw error;
   return (data ?? []) as FeedbackRow[];
+}
+
+export async function countFeedback(): Promise<number> {
+  const supabase = createServerClient();
+  const { count, error } = await supabase
+    .from("feedback_items")
+    .select("*", { count: "exact", head: true });
+  if (error) throw error;
+  return count ?? 0;
 }
 
 export async function createPipelineRun(): Promise<string> {

@@ -1,7 +1,9 @@
 import {
   clearAnalysisResults,
+  countFeedback,
   createPipelineRun,
   fetchAllFeedback,
+  getAnalysisMaxItems,
   updatePipelineRun,
 } from "./db";
 import { runPainPointBatch } from "./stages/pain-points";
@@ -22,9 +24,16 @@ export type StageBatchResult = {
 export async function startPipeline(clearPrevious = true): Promise<{
   pipeline_run_id: string;
   item_count: number;
+  total_feedback_count: number;
+  max_items: number;
   stages: AnalysisStage[];
 }> {
-  const items = await fetchAllFeedback();
+  const [items, totalFeedbackCount] = await Promise.all([
+    fetchAllFeedback(),
+    countFeedback(),
+  ]);
+  const maxItems = getAnalysisMaxItems();
+
   if (items.length === 0) {
     throw new Error("No feedback items to analyze. Import data first.");
   }
@@ -37,6 +46,8 @@ export async function startPipeline(clearPrevious = true): Promise<{
   return {
     pipeline_run_id: pipelineRunId,
     item_count: items.length,
+    total_feedback_count: totalFeedbackCount,
+    max_items: maxItems,
     stages: [...ANALYSIS_STAGES],
   };
 }

@@ -1,3 +1,4 @@
+import { formatError } from "@/lib/analysis/errors";
 import {
   failPipeline,
   runPipelineStageBatch,
@@ -49,7 +50,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Analysis failed";
+    const message = formatError(err);
+    console.error("[analysis]", message, err);
     if (pipelineRunId) {
       await failPipeline(pipelineRunId, message).catch(() => {});
     }
