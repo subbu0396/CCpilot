@@ -100,17 +100,20 @@ Stored in `feedback_items` with `UNIQUE (source, external_id)` for idempotent re
 - **Trustpilot:** Business Units API `GET /v1/private/business-units/{id}/reviews`.
 - Map `title`, `text`, `stars`, `consumer.displayName`, `createdAt`.
 
-## Analysis pipeline (Stage 2 — not yet built)
+## Analysis pipeline (Stage 2)
 
-Planned stages, each as idempotent Postgres job queue entries in `analysis_jobs`:
+Implemented as a staged job queue with six steps:
 
-1. Pain point extraction (Claude + Zod)
-2. Churn risk scoring (source-weighted)
-3. Embeddings (Voyage AI) + k-means clustering
-4. Feature extraction per cluster
-5. Roadmap generation (Now/Next/Later)
+1. **Pain points** — Claude extracts severity (1–5), sentiment, product area
+2. **Churn risk** — source-weighted risk scoring (call > ticket > review > playstore)
+3. **Embeddings** — Voyage AI `voyage-3` vectors stored in pgvector
+4. **Clustering** — k-means + Claude-generated cluster labels
+5. **Features** — feature suggestions per cluster with impact/effort
+6. **Roadmap** — Now/Next/Later prioritization with rationale
 
-System prompts will use Anthropic prompt caching. Dashboard routes (`/pain-points`, `/churn-risk`, etc.) read analyzed tables, not raw feedback.
+Trigger from **Admin → Re-run analysis pipeline**. Runs one stage per API call to stay within Vercel timeouts.
+
+Dashboard routes read analyzed tables: `/pain-points`, `/churn-risk`, `/clusters`, `/features`, `/roadmap`.
 
 ## Deployment
 

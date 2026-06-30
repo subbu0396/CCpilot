@@ -1,19 +1,32 @@
 import Link from "next/link";
+import { getLatestPipelineRun } from "@/lib/supabase/analysis-queries";
 import { getIngestionSummary } from "@/lib/supabase/queries";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   let summary: Awaited<ReturnType<typeof getIngestionSummary>> = [];
+  let pipelineRun: Awaited<ReturnType<typeof getLatestPipelineRun>> = null;
   let error: string | null = null;
 
   try {
-    summary = await getIngestionSummary();
+    [summary, pipelineRun] = await Promise.all([
+      getIngestionSummary(),
+      getLatestPipelineRun(),
+    ]);
   } catch (e) {
     error = e instanceof Error ? e.message : "Failed to load data";
   }
 
   const totalRecords = summary.reduce((n, s) => n + s.count, 0);
+
+  const dashboards = [
+    { href: "/pain-points", label: "Pain Points", desc: "Severity & sentiment" },
+    { href: "/churn-risk", label: "Churn Risk", desc: "Customer risk signals" },
+    { href: "/clusters", label: "Clusters", desc: "Themed feedback groups" },
+    { href: "/features", label: "Features", desc: "Impact vs effort" },
+    { href: "/roadmap", label: "Roadmap", desc: "Now / Next / Later" },
+  ];
 
   return (
     <div className="space-y-8">
@@ -22,14 +35,14 @@ export default async function HomePage() {
           Customer Intelligence Copilot
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Portfolio demo — ingest feedback from four sources via MCP, store in
-          Supabase, analyze with Claude (pipeline coming next).
+          Ingest multi-source feedback, analyze with Claude + Voyage AI, act on
+          a prioritized roadmap.
         </p>
       </div>
 
       {error && (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
-          Supabase not configured or schema not applied: {error}
+          {error}
         </div>
       )}
 
@@ -55,7 +68,28 @@ export default async function HomePage() {
 
       <p className="text-sm text-muted-foreground">
         Total feedback items: <strong>{totalRecords}</strong>
+        {pipelineRun && (
+          <>
+            {" "}
+            · Last analysis: <strong>{pipelineRun.status}</strong>
+            {pipelineRun.completed_at &&
+              ` (${new Date(pipelineRun.completed_at).toLocaleString()})`}
+          </>
+        )}
       </p>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {dashboards.map((d) => (
+          <Link
+            key={d.href}
+            href={d.href}
+            className="rounded-lg border p-4 hover:border-primary hover:bg-muted/30"
+          >
+            <p className="font-medium">{d.label}</p>
+            <p className="text-sm text-muted-foreground">{d.desc}</p>
+          </Link>
+        ))}
+      </div>
 
       <div className="flex gap-3">
         <Link
@@ -68,7 +102,7 @@ export default async function HomePage() {
           href="/admin/ingestion"
           className="rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted"
         >
-          Ingestion status
+          Run analysis
         </Link>
       </div>
     </div>

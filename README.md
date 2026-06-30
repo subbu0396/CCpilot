@@ -67,5 +67,5 @@ See `sample-data/README.md` for the finalized schema. A 5-row support ticket stu
 - [x] End-to-end ingestion pattern (parse → normalize → upsert)
 - [x] Minimal dashboard (home, upload preview, ingestion status)
 - [ ] Full synthetic sample datasets (user-generated)
-- [ ] Analysis pipeline (Claude + Voyage + job queue)
-- [ ] Dashboard pages (pain points, churn, clusters, features, roadmap)
+- [x] Analysis pipeline (Claude + Voyage + job queue)
+- [x] Dashboard pages (pain points, churn, clusters, features, roadmap)

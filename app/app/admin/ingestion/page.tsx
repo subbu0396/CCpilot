@@ -1,16 +1,23 @@
 export const dynamic = "force-dynamic";
 
-import { getIngestionRuns, getIngestionSummary } from "@/lib/supabase/queries";
+import { RunPipelineButton } from "@/components/RunPipelineButton";
+import {
+  getIngestionRuns,
+  getIngestionSummary,
+} from "@/lib/supabase/queries";
+import { getLatestPipelineRun } from "@/lib/supabase/analysis-queries";
 
 export default async function IngestionAdminPage() {
   let summary: Awaited<ReturnType<typeof getIngestionSummary>> = [];
   let runs: Awaited<ReturnType<typeof getIngestionRuns>> = [];
+  let pipelineRun: Awaited<ReturnType<typeof getLatestPipelineRun>> = null;
   let error: string | null = null;
 
   try {
-    [summary, runs] = await Promise.all([
+    [summary, runs, pipelineRun] = await Promise.all([
       getIngestionSummary(),
       getIngestionRuns(),
+      getLatestPipelineRun(),
     ]);
   } catch (e) {
     error = e instanceof Error ? e.message : "Failed to load";
@@ -19,10 +26,9 @@ export default async function IngestionAdminPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Ingestion Status</h1>
+        <h1 className="text-2xl font-bold">Ingestion & Analysis</h1>
         <p className="text-sm text-muted-foreground">
-          MCP server writes here after each import. Re-run imports via MCP CLI
-          or Cursor MCP tools.
+          Import status and analysis pipeline controls.
         </p>
       </div>
 
@@ -31,6 +37,24 @@ export default async function IngestionAdminPage() {
           {error}
         </div>
       )}
+
+      <section className="rounded-lg border p-4">
+        <h2 className="mb-3 text-lg font-semibold">Analysis pipeline</h2>
+        {pipelineRun && (
+          <p className="mb-3 text-sm text-muted-foreground">
+            Last run: {pipelineRun.status}{" "}
+            {pipelineRun.completed_at
+              ? `· ${new Date(pipelineRun.completed_at).toLocaleString()}`
+              : pipelineRun.started_at
+                ? `· started ${new Date(pipelineRun.started_at).toLocaleString()}`
+                : ""}
+            {pipelineRun.error_message && (
+              <span className="block text-destructive">{pipelineRun.error_message}</span>
+            )}
+          </p>
+        )}
+        <RunPipelineButton />
+      </section>
 
       <section>
         <h2 className="mb-3 text-lg font-semibold">By source</h2>
@@ -61,7 +85,7 @@ export default async function IngestionAdminPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">Recent runs</h2>
+        <h2 className="mb-3 text-lg font-semibold">Recent imports</h2>
         <div className="overflow-hidden rounded-lg border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
@@ -97,10 +121,6 @@ export default async function IngestionAdminPage() {
           </table>
         </div>
       </section>
-
-      <p className="text-xs text-muted-foreground">
-        Analysis pipeline &quot;re-run&quot; trigger will be added in Stage 2.
-      </p>
     </div>
   );
 }

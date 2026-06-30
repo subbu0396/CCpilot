@@ -13,7 +13,12 @@ export const metadata: Metadata = {
 const nav = [
   { href: "/", label: "Home" },
   { href: "/upload", label: "Upload" },
-  { href: "/admin/ingestion", label: "Ingestion" },
+  { href: "/pain-points", label: "Pain Points" },
+  { href: "/churn-risk", label: "Churn" },
+  { href: "/clusters", label: "Clusters" },
+  { href: "/features", label: "Features" },
+  { href: "/roadmap", label: "Roadmap" },
+  { href: "/admin/ingestion", label: "Admin" },
 ];
 
 export default function RootLayout({
@@ -25,11 +30,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <header className="border-b bg-white">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
             <Link href="/" className="text-lg font-semibold text-primary">
               CCpilot
             </Link>
-            <nav className="flex gap-4 text-sm">
+            <nav className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
               {nav.map((item) => (
                 <Link
                   key={item.href}
