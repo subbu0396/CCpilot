@@ -1,4 +1,9 @@
 import { createServerClient } from "./client";
+import {
+  tokenizeReviewText,
+  type ReviewWordEntry,
+} from "@/lib/analysis/review-words";
+import { getAnalysisMaxItems } from "@/lib/analysis/db";
 
 export type PainPointRow = {
   id: string;
@@ -418,4 +423,60 @@ export async function getDashboardStats() {
     highChurnCount,
     roadmapCount: roadmapCount ?? 0,
   };
+}
+
+export type { ReviewWordEntry };
+
+export async function getReviewWordCloud(
+  wordLimit = 35,
+  reviewLimit?: number
+): Promise<ReviewWordEntry[]> {
+  const supabase = createServerClient();
+  const limit = reviewLimit ?? getAnalysisMaxItems();
+
+  const { data, error } = await supabase
+    .from("feedback_items")
+    .select("text, source, customer_id")
+    .order("timestamp", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  if (!data?.length) return [];
+
+  const counts = new Map<string, number>();
+  const quotesByWord = new Map<
+    string,
+    { text: string; source: string; customer_id: string | null }[]
+  >();
+
+  for (const row of data) {
+    const text = row.text as string;
+    const uniqueWords = Array.from(new Set(tokenizeReviewText(text)));
+
+    for (const word of uniqueWords) {
+      counts.set(word, (counts.get(word) ?? 0) + 1);
+
+      const quotes = quotesByWord.get(word) ?? [];
+      if (
+        quotes.length < 2 &&
+        text.toLowerCase().includes(word)
+      ) {
+        quotes.push({
+          text,
+          source: row.source as string,
+          customer_id: row.customer_id as string | null,
+        });
+      }
+      quotesByWord.set(word, quotes);
+    }
+  }
+
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, wordLimit)
+    .map(([text, value]) => ({
+      text,
+      value,
+      quotes: quotesByWord.get(text) ?? [],
+    }));
 }

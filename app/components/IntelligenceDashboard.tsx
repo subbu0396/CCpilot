@@ -4,10 +4,10 @@ import { useMemo, useState } from "react";
 import { ChurnTrendChart } from "@/components/ChurnTrendChart";
 import { ImpactEffortScatter } from "@/components/ImpactEffortScatter";
 import { SentimentChart } from "@/components/SentimentChart";
-import { ThemeWordCloud } from "@/components/ThemeWordCloud";
+import { ReviewWordCloud } from "@/components/ReviewWordCloud";
 import type {
-  ClusterEnriched,
   PainPointWithQuote,
+  ReviewWordEntry,
 } from "@/lib/supabase/analysis-queries";
 
 type ChurnCustomer = {
@@ -58,7 +58,7 @@ export type DashboardProps = {
   sentiment: { name: string; value: number }[];
   churnTrend: { month: string; count: number }[];
   painPoints: PainPointWithQuote[];
-  clusters: ClusterEnriched[];
+  reviewWords: ReviewWordEntry[];
   churnCustomers: ChurnCustomer[];
   features: FeatureRow[];
   roadmap: RoadmapRow[];
@@ -66,7 +66,6 @@ export type DashboardProps = {
 
 const TABS = [
   { id: "overview", label: "Overview" },
-  { id: "themes", label: "Common themes" },
   { id: "pain", label: "Pain points" },
   { id: "churn", label: "Churn signals" },
   { id: "roadmap", label: "Roadmap" },
@@ -99,14 +98,14 @@ export function IntelligenceDashboard({
   sentiment,
   churnTrend,
   painPoints,
-  clusters,
+  reviewWords,
   churnCustomers,
   features,
   roadmap,
 }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
-  const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
 
   const productAreas = useMemo(
     () => Array.from(new Set(painPoints.map((p) => p.product_area))).sort(),
@@ -116,25 +115,21 @@ export function IntelligenceDashboard({
   const filteredPainPoints = useMemo(() => {
     let rows = painPoints;
     if (selectedArea) rows = rows.filter((p) => p.product_area === selectedArea);
-    if (selectedTheme) {
-      const cluster = clusters.find((c) => c.id === selectedTheme);
-      if (cluster) {
-        const quotes = new Set(
-          cluster.member_quotes.map((q) => q.text.slice(0, 80))
+    if (selectedWord) {
+      const needle = selectedWord.toLowerCase();
+      rows = rows.filter(
+        (p) =>
+          p.quote.toLowerCase().includes(needle) ||
+          p.summary.toLowerCase().includes(needle)
+      );
+      if (rows.length === 0) {
+        rows = painPoints.filter((p) =>
+          p.quote.toLowerCase().includes(needle)
         );
-        rows = rows.filter(
-          (p) =>
-            quotes.has(p.quote.slice(0, 80)) ||
-            cluster.label
-              .toLowerCase()
-              .includes(p.product_area.toLowerCase()) ||
-            p.summary.toLowerCase().includes(cluster.label.toLowerCase().slice(0, 8))
-        );
-        if (rows.length === 0) rows = painPoints.slice(0, 5);
       }
     }
     return rows;
-  }, [painPoints, selectedArea, selectedTheme, clusters]);
+  }, [painPoints, selectedArea, selectedWord]);
 
   const highRiskCustomers = churnCustomers.filter(
     (c) => c.max_risk === "high" || c.max_risk === "medium"
@@ -198,10 +193,25 @@ export function IntelligenceDashboard({
 
         {hasData && activeTab === "overview" && (
           <div className="space-y-6">
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-3">
               <section className="rounded-lg border bg-card p-4">
                 <h3 className="mb-3 text-sm font-semibold">Sentiment mix</h3>
                 <SentimentChart data={sentiment} />
+              </section>
+              <section className="rounded-lg border bg-card p-3">
+                <h3 className="mb-2 text-sm font-semibold">Words from reviews</h3>
+                <p className="mb-2 text-[10px] text-muted-foreground">
+                  From uploaded feedback · click a word to filter pain points
+                </p>
+                <ReviewWordCloud
+                  words={reviewWords}
+                  selectedWord={selectedWord}
+                  onSelect={(word) => {
+                    setSelectedWord(word);
+                    if (word) setActiveTab("pain");
+                  }}
+                  compact
+                />
               </section>
               <section className="rounded-lg border bg-card p-4">
                 <h3 className="mb-3 text-sm font-semibold">Churn signal trend</h3>
@@ -228,34 +238,14 @@ export function IntelligenceDashboard({
           </div>
         )}
 
-        {hasData && activeTab === "themes" && (
-          <div className="space-y-4">
-            <ThemeWordCloud
-              clusters={clusters}
-              selectedId={selectedTheme}
-              onSelect={setSelectedTheme}
-            />
-            {selectedTheme && (
-              <button
-                type="button"
-                onClick={() => setActiveTab("pain")}
-                className="text-sm font-medium text-primary hover:underline"
-              >
-                View related pain points →
-              </button>
-            )}
-          </div>
-        )}
-
         {hasData && activeTab === "pain" && (
           <div className="space-y-4">
-            {selectedTheme && (
+            {selectedWord && (
               <p className="rounded-md bg-primary/10 px-3 py-2 text-xs text-primary">
-                Filtered by theme:{" "}
-                <strong>{clusters.find((c) => c.id === selectedTheme)?.label}</strong>
+                Filtered by word: <strong>{selectedWord}</strong>
                 <button
                   type="button"
-                  onClick={() => setSelectedTheme(null)}
+                  onClick={() => setSelectedWord(null)}
                   className="ml-2 underline"
                 >
                   Clear

@@ -4,11 +4,11 @@ import { Workspace } from "@/components/Workspace";
 import {
   getChurnByCustomer,
   getChurnTrend,
-  getClustersEnriched,
   getDashboardStats,
   getFeatures,
   getLatestPipelineRun,
   getPainPointsWithQuotes,
+  getReviewWordCloud,
   getRoadmap,
   getSentimentDistribution,
 } from "@/lib/supabase/analysis-queries";
@@ -31,7 +31,7 @@ export default async function HomePage() {
     sentiment: [] as Awaited<ReturnType<typeof getSentimentDistribution>>,
     churnTrend: [] as Awaited<ReturnType<typeof getChurnTrend>>,
     painPoints: [] as Awaited<ReturnType<typeof getPainPointsWithQuotes>>,
-    clusters: [] as Awaited<ReturnType<typeof getClustersEnriched>>,
+    reviewWords: [] as Awaited<ReturnType<typeof getReviewWordCloud>>,
     churnCustomers: [] as Awaited<ReturnType<typeof getChurnByCustomer>>,
     features: [] as Awaited<ReturnType<typeof getFeatures>>,
     roadmap: [] as Awaited<ReturnType<typeof getRoadmap>>,
@@ -45,7 +45,7 @@ export default async function HomePage() {
       sentiment,
       churnTrend,
       painPoints,
-      clusters,
+      reviewWords,
       churnCustomers,
       features,
       roadmap,
@@ -56,7 +56,7 @@ export default async function HomePage() {
       getSentimentDistribution(),
       getChurnTrend(),
       getPainPointsWithQuotes(20),
-      getClustersEnriched(),
+      getReviewWordCloud(35),
       getChurnByCustomer(),
       getFeatures(),
       getRoadmap(),
@@ -75,7 +75,7 @@ export default async function HomePage() {
         sentiment={sentiment}
         churnTrend={churnTrend}
         painPoints={painPoints}
-        clusters={clusters}
+        reviewWords={reviewWords}
         churnCustomers={churnCustomers}
         features={features.map((f) => ({
           id: f.id as string,
