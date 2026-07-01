@@ -287,3 +287,135 @@ export async function getLatestPipelineRun() {
     .maybeSingle();
   return data;
 }
+
+export type PainPointWithQuote = PainPointRow & { quote: string };
+
+export async function getPainPointsWithQuotes(
+  limit = 15
+): Promise<PainPointWithQuote[]> {
+  const rows = await getPainPoints();
+  if (!rows.length) return [];
+
+  const supabase = createServerClient();
+  const ids = rows.map((r) => r.feedback_item_id);
+  const { data: feedbackData } = await supabase
+    .from("feedback_items")
+    .select("id, text")
+    .in("id", ids);
+
+  const quoteMap = new Map(
+    (feedbackData ?? []).map((f) => [f.id as string, f.text as string])
+  );
+
+  return rows.slice(0, limit).map((row) => ({
+    ...row,
+    quote: quoteMap.get(row.feedback_item_id) ?? "",
+  }));
+}
+
+export type ClusterEnriched = {
+  id: string;
+  label: string;
+  summary: string;
+  size: number;
+  avg_severity: number | null;
+  sample_quotes: string[];
+  member_quotes: {
+    text: string;
+    source: string;
+    customer_id: string | null;
+  }[];
+};
+
+export async function getClustersEnriched(): Promise<ClusterEnriched[]> {
+  const clusters = await getClusters();
+  if (!clusters.length) return [];
+
+  const supabase = createServerClient();
+  const clusterIds = clusters.map((c) => c.id as string);
+
+  const { data: members } = await supabase
+    .from("cluster_members")
+    .select("cluster_id, feedback_item_id")
+    .in("cluster_id", clusterIds);
+
+  const feedbackIds = Array.from(
+    new Set((members ?? []).map((m) => m.feedback_item_id as string))
+  );
+
+  const { data: feedbackItems } = await supabase
+    .from("feedback_items")
+    .select("id, text, source, customer_id")
+    .in(
+      "id",
+      feedbackIds.length ? feedbackIds : ["00000000-0000-0000-0000-000000000000"]
+    );
+
+  const feedbackMap = new Map(
+    (feedbackItems ?? []).map((f) => [
+      f.id as string,
+      {
+        text: f.text as string,
+        source: f.source as string,
+        customer_id: f.customer_id as string | null,
+      },
+    ])
+  );
+
+  const quotesByCluster = new Map<
+    string,
+    { text: string; source: string; customer_id: string | null }[]
+  >();
+
+  for (const m of members ?? []) {
+    const cid = m.cluster_id as string;
+    const fi = feedbackMap.get(m.feedback_item_id as string);
+    if (!fi) continue;
+    const list = quotesByCluster.get(cid) ?? [];
+    if (list.length < 8) list.push(fi);
+    quotesByCluster.set(cid, list);
+  }
+
+  return clusters.map((c) => ({
+    id: c.id as string,
+    label: c.label as string,
+    summary: c.summary as string,
+    size: c.size as number,
+    avg_severity: c.avg_severity as number | null,
+    sample_quotes: (c.sample_quotes as string[]) ?? [],
+    member_quotes: quotesByCluster.get(c.id as string) ?? [],
+  }));
+}
+
+export async function getDashboardStats() {
+  const supabase = createServerClient();
+
+  const [
+    { count: feedbackCount },
+    { count: painCount },
+    { count: clusterCount },
+    { count: roadmapCount },
+    churnData,
+  ] = await Promise.all([
+    supabase.from("feedback_items").select("*", { count: "exact", head: true }),
+    supabase.from("pain_points").select("*", { count: "exact", head: true }),
+    supabase.from("feedback_clusters").select("*", { count: "exact", head: true }),
+    supabase.from("roadmap_items").select("*", { count: "exact", head: true }),
+    supabase
+      .from("churn_assessments")
+      .select("risk_level")
+      .in("risk_level", ["high", "medium"]),
+  ]);
+
+  const highChurnCount = (churnData.data ?? []).filter(
+    (r) => r.risk_level === "high"
+  ).length;
+
+  return {
+    totalFeedback: feedbackCount ?? 0,
+    painPointCount: painCount ?? 0,
+    clusterCount: clusterCount ?? 0,
+    highChurnCount,
+    roadmapCount: roadmapCount ?? 0,
+  };
+}
