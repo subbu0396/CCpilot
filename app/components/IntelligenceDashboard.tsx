@@ -199,9 +199,9 @@ export function IntelligenceDashboard({
                 <SentimentChart data={sentiment} />
               </section>
               <section className="rounded-lg border bg-card p-3">
-                <h3 className="mb-2 text-sm font-semibold">Words from reviews</h3>
+                <h3 className="mb-2 text-sm font-semibold">Common Themes</h3>
                 <p className="mb-2 text-[10px] text-muted-foreground">
-                  From uploaded feedback · click a word to filter pain points
+                  Top terms from customer feedback · click to explore pain points
                 </p>
                 <ReviewWordCloud
                   words={reviewWords}

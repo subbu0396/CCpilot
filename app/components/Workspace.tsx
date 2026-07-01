@@ -1,5 +1,6 @@
 "use client";
 
+import { AiRecommendations } from "@/components/AiRecommendations";
 import { IntelligenceDashboard, type DashboardProps } from "@/components/IntelligenceDashboard";
 import { RunPipelineButton } from "@/components/RunPipelineButton";
 import { UploadPanel } from "@/components/UploadPanel";
@@ -38,6 +39,12 @@ export function Workspace({ pipelineError, ...dashboard }: WorkspaceProps) {
 
       {/* Right: intelligence dashboard */}
       <section className="min-w-0 flex-1 overflow-hidden p-4 lg:p-6">
+        <AiRecommendations
+          roadmap={dashboard.roadmap}
+          painPoints={dashboard.painPoints}
+          churnCustomers={dashboard.churnCustomers}
+          hasData={dashboard.stats.totalFeedback > 0}
+        />
         <div className="mb-4">
           <h1 className="text-xl font-bold tracking-tight">
             Customer intelligence
