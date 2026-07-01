@@ -20,12 +20,14 @@
     "react-dom": "^18.3.1",
     "recharts": "^2.15.3",
     "tailwind-merge": "^3.3.0",
+    "wordcloud": "^1.2.3",
     "zod": "^3.24.4"
   },
   "devDependencies": {
     "@types/node": "^20.17.50",
     "@types/react": "^18.3.20",
     "@types/react-dom": "^18.3.6",
+    "@types/wordcloud": "^1.2.2",
     "autoprefixer": "^10.4.21",
     "eslint": "^8.57.1",
     "eslint-config-next": "14.2.35",

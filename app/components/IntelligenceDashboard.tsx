@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ChurnTrendChart } from "@/components/ChurnTrendChart";
 import { ImpactEffortScatter } from "@/components/ImpactEffortScatter";
 import { SentimentChart } from "@/components/SentimentChart";
+import { ThemeWordCloud } from "@/components/ThemeWordCloud";
 import type {
   ClusterEnriched,
   PainPointWithQuote,
@@ -104,9 +105,6 @@ export function IntelligenceDashboard({
   roadmap,
 }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
-  const [expandedCluster, setExpandedCluster] = useState<string | null>(
-    clusters[0]?.id ?? null
-  );
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
 
@@ -232,92 +230,19 @@ export function IntelligenceDashboard({
 
         {hasData && activeTab === "themes" && (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Click a theme to explore customer quotes and linked pain points.
-            </p>
-            {clusters.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No themes yet. Run analysis.</p>
-            ) : (
-              <div className="grid gap-3 lg:grid-cols-2">
-                {clusters.map((cluster) => {
-                  const expanded = expandedCluster === cluster.id;
-                  return (
-                    <div
-                      key={cluster.id}
-                      className={`rounded-lg border bg-card transition ${
-                        expanded ? "border-primary shadow-md ring-1 ring-primary/20" : ""
-                      }`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setExpandedCluster(expanded ? null : cluster.id);
-                          setSelectedTheme(expanded ? null : cluster.id);
-                          if (!expanded) setActiveTab("pain");
-                        }}
-                        className="w-full p-4 text-left"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <h3 className="font-semibold">{cluster.label}</h3>
-                          <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs">
-                            {cluster.size} reviews
-                          </span>
-                        </div>
-                        <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                          {cluster.summary}
-                        </p>
-                        {cluster.avg_severity != null && (
-                          <p className="mt-2 text-xs text-muted-foreground">
-                            Avg severity {Number(cluster.avg_severity).toFixed(1)} / 5
-                          </p>
-                        )}
-                      </button>
-
-                      {expanded && (
-                        <div className="border-t px-4 pb-4 pt-3 space-y-3">
-                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                            Customer quotes
-                          </p>
-                          {(cluster.member_quotes.length
-                            ? cluster.member_quotes
-                            : cluster.sample_quotes.map((t) => ({
-                                text: t,
-                                source: "—",
-                                customer_id: null,
-                              }))
-                          ).map((q, i) => (
-                            <blockquote
-                              key={i}
-                              className="rounded-md border-l-4 border-primary/40 bg-muted/40 px-3 py-2 text-sm italic"
-                            >
-                              &ldquo;{q.text.slice(0, 280)}
-                              {q.text.length > 280 ? "…" : ""}&rdquo;
-                              <footer className="mt-1 text-[10px] not-italic text-muted-foreground">
-                                {typeof q === "object" && "source" in q && (
-                                  <>
-                                    {q.source}
-                                    {q.customer_id ? ` · ${q.customer_id}` : ""}
-                                  </>
-                                )}
-                              </footer>
-                            </blockquote>
-                          ))}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedTheme(cluster.id);
-                              setActiveTab("pain");
-                            }}
-                            className="text-xs font-medium text-primary hover:underline"
-                          >
-                            View related pain points →
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+            <ThemeWordCloud
+              clusters={clusters}
+              selectedId={selectedTheme}
+              onSelect={setSelectedTheme}
+            />
+            {selectedTheme && (
+              <button
+                type="button"
+                onClick={() => setActiveTab("pain")}
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                View related pain points →
+              </button>
             )}
           </div>
         )}
