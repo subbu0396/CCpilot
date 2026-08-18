@@ -48,13 +48,19 @@ Every source normalizes immediately on ingest:
 |--------|------|---------------|
 | Play Store | `/lib/ingestion/playstore.ts` | Swap CSV parser for Google Play Developer API |
 | G2 | `/mcp-server` (`fetch_g2_reviews` / `import_g2_csv`) | Partner API already wired; CSV fallback for demo |
-| Tickets | `/lib/ingestion/tickets.ts` | Zendesk/Freshdesk CSV now; REST webhooks later |
+| Tickets | `/lib/ingestion/tickets.ts` (CSV) + `/lib/ingestion/zendesk-live.ts` (live) | Zendesk live sync wired up (OAuth client_credentials); Freshdesk still CSV-only |
 
 ### Why a custom G2 MCP server?
 
 G2 has **no official MCP server as of 2026**. The `/mcp-server` package wraps the Partner API v2 (`GET https://data.g2.com/api/v2/products/{product_id}/reviews`, `Authorization: Bearer <G2_API_KEY>`, cursor pagination), normalizes into the shared schema, and upserts to Supabase. Keeping it as a separate deployable unit means Claude Desktop (or any MCP client) can drive G2 ingestion independently of the Next.js app.
 
 A valid `G2_API_KEY` alone isn't sufficient — G2 also requires a **data subscription** granted for the specific `product_id` (via the partner portal); a key with no subscription authenticates fine but gets `403` on every product's reviews. See `mcp-server/README.md` for the exact auth/pagination/field-mapping shape.
+
+### Zendesk live sync
+
+`lib/ingestion/zendesk-live.ts` fetches tickets via `GET /api/v2/tickets.json` and normalizes them, triggered from Admin → "Sync Zendesk" (`POST /api/ingest` with `{action: "sync_zendesk"}`, admin-token gated).
+
+Auth is **OAuth 2.0 client credentials** (`POST /oauth/tokens`, `grant_type=client_credentials`), not a static API token — Zendesk blocked new API-token creation for accounts created on/after 2026-07-28 and is fully retiring them by 2027-04-30. Create a **Confidential** OAuth client in Admin Center → Apps and integrations → APIs → OAuth clients (no redirect URL needed for this grant type); the client's Identifier/Secret become `ZENDESK_CLIENT_ID`/`ZENDESK_CLIENT_SECRET`. The access token is short-lived (~30 min) and cached in-memory per process, re-fetched automatically on expiry.
 
 ## Pipeline design
 

@@ -110,6 +110,28 @@ export function Admin() {
     }
   }
 
+  async function syncZendesk() {
+    setRunning(true);
+    setStatus("Syncing Zendesk tickets…");
+    try {
+      const res = await adminFetch("/api/ingest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "sync_zendesk" }),
+      });
+      const json = await res.json();
+      setStatus(
+        json.message ||
+          `Zendesk sync: ${json.parsed ?? 0} tickets (${json.mode})`
+      );
+      await refresh();
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRunning(false);
+    }
+  }
+
   return (
     <section id="admin" className="scroll-mt-24">
       <h2 className="font-[family-name:var(--font-display)] text-2xl text-slate-900">
@@ -142,6 +164,9 @@ export function Admin() {
             ))}
             <Button onClick={() => void syncG2()} disabled={running}>
               Sync G2 via MCP
+            </Button>
+            <Button onClick={() => void syncZendesk()} disabled={running}>
+              Sync Zendesk
             </Button>
           </div>
           {preview && (

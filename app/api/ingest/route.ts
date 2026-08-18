@@ -7,6 +7,7 @@ import { parseG2Csv } from "@/lib/ingestion/g2-csv";
 import { validateFeedback } from "@/lib/ingestion/upsert";
 import { saveFeedbackItems } from "@/lib/store/feedback";
 import { requireAdminAuth } from "@/lib/auth/admin";
+import { fetchZendeskTickets, hasZendeskCreds } from "@/lib/ingestion/zendesk-live";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +62,29 @@ export async function POST(req: NextRequest) {
           message:
             "G2_API_KEY absent — imported sample G2 CSVs (same mapping as MCP import_g2_csv)",
           results,
+        });
+      }
+
+      if (body.action === "sync_zendesk") {
+        if (!hasZendeskCreds()) {
+          return NextResponse.json({
+            ok: false,
+            message:
+              "Missing ZENDESK_SUBDOMAIN / ZENDESK_CLIENT_ID / ZENDESK_CLIENT_SECRET — configure a Zendesk OAuth client (Confidential, client credentials grant) to enable live sync.",
+          });
+        }
+
+        const company = typeof body.company === "string" ? body.company : undefined;
+        const rows = await fetchZendeskTickets(company);
+        const { valid, errors } = validateFeedback(rows);
+        const saved = await saveFeedbackItems(valid);
+
+        return NextResponse.json({
+          ok: true,
+          source: "zendesk_live",
+          ...saved,
+          parsed: valid.length,
+          validation_errors: errors.slice(0, 10),
         });
       }
 

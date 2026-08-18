@@ -3,6 +3,39 @@
 Running log of what changed and why, newest first. For full detail see the
 commit each entry references.
 
+## 2026-08-19 — Wire up live Zendesk ticket sync
+
+Added a real Zendesk connector (`lib/ingestion/zendesk-live.ts`), triggered
+via Admin → "Sync Zendesk" (`POST /api/ingest` `{action: "sync_zendesk"}`,
+admin-token gated per the auth work above).
+
+Getting a working credential took a few detours worth recording:
+- Static Zendesk API tokens didn't work — turned out **new Zendesk accounts
+  (created on/after 2026-07-28) can't create API tokens at all**; Zendesk is
+  retiring them account-wide by 2027-04-30 in favor of OAuth. The UI shows a
+  migration notice instead of the "Add API token" button on new accounts.
+- The obvious next step (an OAuth **authorization_code** flow, which is what
+  a redirect-URI-based setup implies) is the wrong grant for a backend
+  service — it's for delegating access on behalf of an interactive user and
+  needs a browser round-trip.
+- The correct flow for a headless integration is **client_credentials**: a
+  **Confidential** OAuth client (Admin Center → APIs → OAuth clients, no
+  redirect URL needed) exchanged via `POST /oauth/tokens` with
+  `grant_type=client_credentials` for a short-lived (~30 min) bearer token.
+  No browser, no user approval step.
+
+Verified end-to-end against the live trial account — fetched Zendesk's
+seeded sample ticket, normalized it, and upserted into Supabase
+(`feedback_items`, confirmed via direct query and the dashboard). Reuses the
+existing `saveFeedbackItems`/`validateFeedback` pipeline, same as CSV
+uploads. `ZENDESK_SUBDOMAIN`/`ZENDESK_CLIENT_ID`/`ZENDESK_CLIENT_SECRET` set
+in `.env.local` and Vercel (all environments).
+
+(Also hit a red herring while verifying: `/api/dashboard` showed 675 items
+instead of 676 right after the sync, even after a full dev-server restart —
+turned out to be a stale Next.js `.next/cache` fetch-cache entry from an
+earlier session, not a real bug. `rm -rf .next` fixed it.)
+
 ## 2026-08-19 — Fix G2 integration to match the real Partner API v2
 
 The repo's original G2 connector (`mcp-server/tools/fetch-g2-reviews.ts`,
