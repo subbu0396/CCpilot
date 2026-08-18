@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RefreshCw } from "lucide-react";
+import { adminFetch } from "@/lib/auth/admin-client";
 
 const borderColor: Record<AISuggestion["priority"], string> = {
   Urgent: "border-l-red-500",
@@ -29,13 +30,17 @@ export function AISuggestions() {
     async (force = false) => {
       setLoading(true);
       try {
-        const res = await fetch("/api/suggestions", {
+        const fetcher = force ? adminFetch : fetch;
+        const res = await fetcher("/api/suggestions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ filterKey, force }),
         });
         const json = await res.json();
         setSuggestions(json.suggestions ?? []);
+      } catch {
+        // Admin token prompt was cancelled, or the request failed — leave
+        // whatever suggestions were already showing in place.
       } finally {
         setLoading(false);
       }

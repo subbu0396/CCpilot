@@ -5,6 +5,7 @@ import { runClustering } from "@/lib/pipeline/cluster";
 import { runFeatures } from "@/lib/pipeline/features";
 import { runRoadmap } from "@/lib/pipeline/roadmap";
 import { listJobs } from "@/lib/pipeline/jobs";
+import { requireAdminAuth } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -15,6 +16,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const authFail = requireAdminAuth(req);
+  if (authFail) return authFail;
+
   try {
     const body = await req.json();
     const stage = body.stage as string;

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import type { PipelineStage } from "@/lib/supabase/types";
+import { adminFetch } from "@/lib/auth/admin-client";
 
 const STAGES: { stage: PipelineStage; label: string }[] = [
   { stage: "pain_points", label: "Pain point extraction" },
@@ -50,7 +51,7 @@ export function Admin() {
     setRunning(true);
     setStatus(`Running ${stage}…`);
     try {
-      const res = await fetch("/api/pipeline", {
+      const res = await adminFetch("/api/pipeline", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stage, ...extra }),
@@ -68,29 +69,33 @@ export function Admin() {
 
   async function onUpload(source: string, file: File | null) {
     if (!file) return;
-    const form = new FormData();
-    form.set("file", file);
-    form.set("source", source);
-    form.set("preview", "1");
-    const previewRes = await fetch("/api/ingest", { method: "POST", body: form });
-    const previewJson = await previewRes.json();
-    setPreview(
-      `Preview ${source}: ${previewJson.count} rows\n` +
-        JSON.stringify(previewJson.preview?.slice(0, 2) ?? [], null, 2)
-    );
+    try {
+      const form = new FormData();
+      form.set("file", file);
+      form.set("source", source);
+      form.set("preview", "1");
+      const previewRes = await adminFetch("/api/ingest", { method: "POST", body: form });
+      const previewJson = await previewRes.json();
+      setPreview(
+        `Preview ${source}: ${previewJson.count} rows\n` +
+          JSON.stringify(previewJson.preview?.slice(0, 2) ?? [], null, 2)
+      );
 
-    form.delete("preview");
-    const res = await fetch("/api/ingest", { method: "POST", body: form });
-    const json = await res.json();
-    setStatus(`Uploaded ${json.parsed ?? 0} ${source} rows (${json.mode})`);
-    await refresh();
+      form.delete("preview");
+      const res = await adminFetch("/api/ingest", { method: "POST", body: form });
+      const json = await res.json();
+      setStatus(`Uploaded ${json.parsed ?? 0} ${source} rows (${json.mode})`);
+      await refresh();
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : String(err));
+    }
   }
 
   async function syncG2() {
     setRunning(true);
     setStatus("Syncing G2 via MCP CSV fallback…");
     try {
-      const res = await fetch("/api/ingest", {
+      const res = await adminFetch("/api/ingest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "sync_g2" }),

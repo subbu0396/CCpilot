@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { isLocalMode, readDb, writeDb } from "@/lib/store/local-db";
 import { createServiceClient } from "@/lib/supabase/client";
 import type { RoadmapBucket } from "@/lib/supabase/types";
+import { requireAdminAuth } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
 export async function PATCH(req: NextRequest) {
+  const authFail = requireAdminAuth(req);
+  if (authFail) return authFail;
+
   try {
     const body = await req.json();
     const id = String(body.id);

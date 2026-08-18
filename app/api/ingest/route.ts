@@ -6,10 +6,14 @@ import { parseTicketsCsv } from "@/lib/ingestion/tickets";
 import { parseG2Csv } from "@/lib/ingestion/g2-csv";
 import { validateFeedback } from "@/lib/ingestion/upsert";
 import { saveFeedbackItems } from "@/lib/store/feedback";
+import { requireAdminAuth } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
+  const authFail = requireAdminAuth(req);
+  if (authFail) return authFail;
+
   try {
     const contentType = req.headers.get("content-type") || "";
 

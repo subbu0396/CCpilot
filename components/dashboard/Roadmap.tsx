@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { roadmapToCsv, roadmapToMarkdown } from "@/lib/dashboard/export-roadmap";
 import type { RoadmapBucket } from "@/lib/supabase/types";
+import { adminFetch } from "@/lib/auth/admin-client";
 
 function DraggableCard({
   id,
@@ -109,12 +110,15 @@ export function Roadmap() {
 
     setBusy(true);
     try {
-      await fetch("/api/roadmap", {
+      await adminFetch("/api/roadmap", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: activeId, bucket, sort_order: item.sort_order }),
       });
       await refresh();
+    } catch {
+      // Admin token prompt was cancelled, or the request failed — leave the
+      // board showing its pre-drag state (refresh() was never called).
     } finally {
       setBusy(false);
     }

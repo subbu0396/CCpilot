@@ -8,6 +8,7 @@ import {
   hasAnthropicKey,
 } from "@/lib/pipeline/claude";
 import type { AISuggestion } from "@/lib/supabase/types";
+import { requireAdminAuth } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -119,6 +120,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const filterKey = String(body.filterKey || "default");
     const force = Boolean(body.force);
+
+    if (force) {
+      const authFail = requireAdminAuth(req);
+      if (authFail) return authFail;
+    }
 
     if (!force) {
       const cached = await readCache(filterKey);
