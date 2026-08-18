@@ -3,10 +3,10 @@ import type { Database } from "./types";
 
 // Node.js < 22 has no native WebSocket global, which @supabase/realtime-js
 // requires even though this app never opens a realtime subscription.
-const realtimeTransport =
-  typeof WebSocket === "undefined"
-    ? { transport: require("ws") }
-    : undefined;
+// ws must load synchronously for the realtime client's transport option.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const ws = typeof WebSocket === "undefined" ? require("ws") : undefined;
+const realtimeTransport = ws ? { transport: ws } : undefined;
 
 export function createBrowserClient(): SupabaseClient<Database> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
