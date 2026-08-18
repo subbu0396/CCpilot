@@ -68,6 +68,8 @@ All Claude system prompts use **Anthropic prompt caching** to control cost at sc
 
 When `ANTHROPIC_API_KEY` / `VOYAGE_API_KEY` are absent, the pipeline runs in **heuristic demo mode** so the portfolio demo stays fully interactive.
 
+Pain-points and churn (one Claude call per feedback item, up to 675 items) run with **bounded concurrency** via `lib/pipeline/concurrency.ts` (`mapWithConcurrency`, 10 in flight) rather than one call at a time — cluster/features/roadmap loop per-cluster (≤16) so they don't need it.
+
 ## Local vs Supabase
 
 If `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` are set, data lives in Supabase (apply `supabase/migrations/001_init.sql` first).
@@ -84,3 +86,23 @@ Otherwise the app uses `data/local-db.json` so you can demo without cloud creden
 ## Dashboard
 
 Single scrollable page (`/`) with sticky sidebar anchors and a global filter context (company, source, date, severity). Sections: AI Suggestions → Pain Points → Churn → Clusters → Features → Roadmap → Admin.
+
+## Auth
+
+Single-admin, shared-secret model — no user accounts. Every **read** route (`GET /api/dashboard`, `GET /api/pipeline`, and the automatic on-load `POST /api/suggestions` with `force: false`) is public, so the dashboard works as a passive demo link for anyone. Every **mutating / spend-triggering** route requires an `x-admin-token` header matching `ADMIN_TOKEN`:
+
+| Route | Gated when |
+|-------|------------|
+| `POST /api/ingest` | always (CSV upload, G2 sync) |
+| `POST /api/pipeline` | always (re-runs a pipeline stage — real Claude/Voyage spend) |
+| `PATCH /api/roadmap` | always (drag-and-drop bucket override) |
+| `POST /api/suggestions` | only when `force: true` (the "Regenerate" button — bypasses cache, real Claude spend) |
+
+- `lib/auth/admin.ts` — server-side check, `crypto.timingSafeEqual` comparison against `process.env.ADMIN_TOKEN`. Fails closed (401) if `ADMIN_TOKEN` isn't set.
+- `lib/auth/admin-client.ts` — client-side `adminFetch`: prompts once for the token, caches it in `sessionStorage`, clears + re-prompts on a 401.
+- Admin/Roadmap-drag/Regenerate **UI stays fully visible** to everyone — only the underlying fetch is gated (hiding controls client-side would be security theater, and a portfolio visitor should still see the surface exists).
+- Generate a token with `openssl rand -hex 32`; set in `.env.local` and via `vercel env add ADMIN_TOKEN <environment>` (interactive prompt only — never as a CLI arg, to avoid shell-history leakage).
+
+## Deployment
+
+Live at **https://ccpilot.vercel.app** (Vercel project `subbu0396s-projects/ccpilot`), backed by Supabase (not local-JSON mode) with real `ANTHROPIC_API_KEY`/`VOYAGE_API_KEY`. See [`NOTES.md`](./NOTES.md) for the running change log of what's shipped since the initial build.
