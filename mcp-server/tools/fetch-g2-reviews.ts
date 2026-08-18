@@ -2,9 +2,14 @@
  * fetch_g2_reviews — live G2 Partner API connector.
  *
  * NOTE: G2 has no official MCP server as of 2026 — this custom MCP tool wraps
- * the G2 Partner API directly. Requires a G2 Partner API key.
- * Auth: Authorization: Token token=<G2_API_KEY>
- * Endpoint: https://data.g2.com/api/v1/reviews
+ * the G2 Partner API directly.
+ * Auth: Authorization: Bearer <G2_API_KEY> (AccountAPIToken, HTTP bearer scheme)
+ * Endpoint: GET https://data.g2.com/api/v2/products/{product_id}/reviews
+ * Requires the `products.reviews.read` scope AND a data subscription granted
+ * for the target product — a valid key with no subscription returns 403
+ * ("You do not have access to that resource").
+ * Pagination is cursor-based (page[size] + page[after]/links.next), not
+ * page-number based.
  */
 
 import {
@@ -15,22 +20,23 @@ import { getServiceClient, upsertG2Feedback } from "../lib/supabase.js";
 
 export interface FetchG2Args {
   product_id: string;
-  page?: number;
+  page?: number; // unused — retained for backward-compatible tool input, cursor pagination is automatic
   per_page?: number;
   company?: string;
 }
 
+interface G2ReviewResource {
+  id?: string;
+  type?: string;
+  attributes?: Record<string, unknown>;
+  relationships?: { user?: { data?: { id?: string; type?: string } | null } };
+}
+
 interface G2ListResponse {
-  data?: Array<{
-    id?: string;
-    attributes?: Record<string, unknown>;
-  }>;
-  meta?: {
-    total_count?: number;
-    current_page?: number;
-    total_pages?: number;
-  };
+  data?: G2ReviewResource[];
+  included?: Array<{ id?: string; type?: string; attributes?: Record<string, unknown> }>;
   links?: { next?: string | null };
+  errors?: Array<{ status?: string; title?: string }>;
 }
 
 export async function fetchG2Reviews(
@@ -54,38 +60,46 @@ export async function fetchG2Reviews(
     };
   }
 
-  const perPage = Math.min(Math.max(args.per_page ?? 100, 1), 100);
-  let page = args.page ?? 1;
+  const perPage = Math.min(Math.max(args.per_page ?? 100, 1), 250);
   const all: NormalizedFeedback[] = [];
   const errors: string[] = [];
+
+  let url: string | null = (() => {
+    const u = new URL(
+      `https://data.g2.com/api/v2/products/${encodeURIComponent(args.product_id)}/reviews`
+    );
+    u.searchParams.set("page[size]", String(perPage));
+    u.searchParams.set("include", "user");
+    return u.toString();
+  })();
 
   console.log(
     `[g2-mcp] Starting G2 fetch product_id=${args.product_id} per_page=${perPage}`
   );
 
-  // Paginate until all reviews are fetched
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const url = new URL("https://data.g2.com/api/v1/reviews");
-    url.searchParams.set("filter[product_id]", args.product_id);
-    url.searchParams.set("page[number]", String(page));
-    url.searchParams.set("page[size]", String(perPage));
-
-    console.log(`[g2-mcp] Fetching page ${page}...`);
+  while (url) {
+    console.log(`[g2-mcp] Fetching ${url}`);
 
     let res: Response;
     try {
-      res = await fetch(url.toString(), {
+      res = await fetch(url, {
         headers: {
-          Authorization: `Token token=${apiKey}`,
-          Accept: "application/json",
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+          Accept: "application/vnd.api+json",
         },
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.error(`[g2-mcp] Network error on page ${page}: ${msg}`);
+      console.error(`[g2-mcp] Network error: ${msg}`);
       errors.push(msg);
+      break;
+    }
+
+    if (res.status === 403) {
+      errors.push(
+        "G2 API 403: token is valid but has no data subscription/access for this product. " +
+          "Request a data subscription for this product via the G2 partner portal, then retry."
+      );
       break;
     }
 
@@ -99,23 +113,15 @@ export async function fetchG2Reviews(
 
     const json = (await res.json()) as G2ListResponse;
     const rows = json.data ?? [];
-    console.log(`[g2-mcp] Page ${page}: ${rows.length} reviews`);
+    const included = (json.included ?? []).filter((i) => i.type === "users");
+    console.log(`[g2-mcp] Page: ${rows.length} reviews`);
 
     for (const row of rows) {
-      const normalized = normalizeG2ApiReview(
-        row as Parameters<typeof normalizeG2ApiReview>[0],
-        args.company
-      );
+      const normalized = normalizeG2ApiReview(row, args.company, included);
       if (normalized) all.push(normalized);
     }
 
-    const totalPages = json.meta?.total_pages;
-    const hasNext = Boolean(json.links?.next) || (totalPages ? page < totalPages : false);
-
-    if (rows.length === 0 || !hasNext) {
-      break;
-    }
-    page += 1;
+    url = json.links?.next ?? null;
   }
 
   console.log(`[g2-mcp] Normalized ${all.length} reviews — writing to Supabase`);

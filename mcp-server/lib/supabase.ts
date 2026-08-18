@@ -1,5 +1,14 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createRequire } from "node:module";
 import type { NormalizedFeedback } from "./normalize.js";
+
+// Node.js < 22 has no global WebSocket, which @supabase/realtime-js requires
+// even though this server never opens a realtime subscription. This package
+// is ESM ("type": "module"), so use createRequire rather than bare require().
+const ws =
+  typeof WebSocket === "undefined"
+    ? createRequire(import.meta.url)("ws")
+    : undefined;
 
 export function getServiceClient(): SupabaseClient {
   const url =
@@ -12,6 +21,7 @@ export function getServiceClient(): SupabaseClient {
   }
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
+    realtime: ws ? { transport: ws } : undefined,
   });
 }
 

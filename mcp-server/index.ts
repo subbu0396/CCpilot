@@ -37,7 +37,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "fetch_g2_reviews",
       description:
-        "Fetch paginated reviews from the G2 Partner API and upsert into Supabase feedback_items. Requires G2_API_KEY. Auth uses Token token= format.",
+        "Fetch paginated reviews from the G2 Partner API (v2, Bearer auth) and upsert into Supabase feedback_items. Requires G2_API_KEY with products.reviews.read scope and a data subscription for product_id.",
       inputSchema: {
         type: "object",
         properties: {

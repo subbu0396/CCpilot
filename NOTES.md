@@ -3,6 +3,45 @@
 Running log of what changed and why, newest first. For full detail see the
 commit each entry references.
 
+## 2026-08-19 — Fix G2 integration to match the real Partner API v2
+
+The repo's original G2 connector (`mcp-server/tools/fetch-g2-reviews.ts`,
+`mcp-server/lib/normalize.ts`) was built against a **fictional API shape** —
+`https://data.g2.com/api/v1/reviews` with `Authorization: Token token=...`,
+page-number pagination, and `attributes.body`/`attributes.rating`/
+`attributes.reviewer` fields that don't exist on the real API.
+
+Given a real `G2_API_KEY` to test with, confirmed via direct `curl` against
+G2's actual docs/OpenAPI spec (`https://data.g2.com/openapi/v2.yaml`) that
+the real shape is:
+- `GET https://data.g2.com/api/v2/products/{product_id}/reviews`
+- `Authorization: Bearer <G2_API_KEY>` (the `AccountAPIToken` security scheme
+  is HTTP bearer, not `Token token=`)
+- Cursor pagination (`page[size]` + follow `links.next`), not page numbers
+- Review fields: `title`, `answers` (unstructured Q&A object — no fixed
+  schema, so `normalizeG2ApiReview` now flattens every string leaf), already
+  1–5 `star_rating` (not `/10`), `submitted_at`, `product_name`, `url`; no
+  `body` or `reviewer` attributes — reviewer info comes from the `included`
+  array via `?include=user`
+- **A valid key with no G2-side data subscription for the product returns
+  `403`, not an auth error** — the key I was given authenticates fine
+  (`Bearer` → `200` on `/api/v2/products`, empty result set) but has no
+  product subscription yet, so live review data isn't fetchable until one is
+  granted on G2's side.
+
+Also fixed the same Node < 22 WebSocket gap (see 2026-08-18 entry below) in
+`mcp-server/lib/supabase.ts`'s independent Supabase client — mcp-server is
+pure ESM (`"type": "module"`), so this needed `createRequire(import.meta.url)`
+rather than the main app's bare `require()`.
+
+Rewrote `mcp-server/lib/normalize.ts`, `mcp-server/tools/fetch-g2-reviews.ts`,
+`mcp-server/lib/supabase.ts`, and updated `mcp-server/README.md`/
+`ARCHITECTURE.md` to document the real shape. Verified end-to-end against the
+live API with a placeholder `product_id` — clean `404`/error handling, no
+crash, no bad data written; can't verify real review ingestion until a
+product data subscription exists. `G2_API_KEY` set in `.env.local` and Vercel
+(production/preview/development).
+
 ## 2026-08-18 — Admin token gate on mutating routes (`aa86485`)
 
 The dashboard is live at https://ccpilot.vercel.app with real, billed

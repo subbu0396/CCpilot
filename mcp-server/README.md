@@ -2,30 +2,38 @@
 
 Custom Model Context Protocol server that ingests G2 reviews into the Customer Intelligence Copilot Supabase `feedback_items` table.
 
-> **NOTE:** G2 has no official MCP server as of 2026 — this custom MCP tool wraps the G2 Partner API directly. Requires a G2 Partner API key. For the portfolio demo, fall back to CSV import via the `import_g2_csv` tool if no key is available.
+> **NOTE:** G2 has no official MCP server as of 2026 — this custom MCP tool wraps the G2 Partner API (v2) directly. Requires a G2 Partner API key with the `products.reviews.read` scope **and** a data subscription granted for the target product on G2's side (a valid key with no subscription returns `403`). For the portfolio demo, fall back to CSV import via the `import_g2_csv` tool if no key/subscription is available.
 
 ## Tools
 
 | Tool | Purpose |
 |------|---------|
-| `fetch_g2_reviews` | Live G2 Partner API (`https://data.g2.com/api/v1/reviews`) |
+| `fetch_g2_reviews` | Live G2 Partner API (`GET https://data.g2.com/api/v2/products/{product_id}/reviews`) |
 | `import_g2_csv` | CSV fallback with the same field mapping |
 
 ### Auth (live API)
 
 ```
-Authorization: Token token=<G2_API_KEY>
+Authorization: Bearer <G2_API_KEY>
 ```
+
+(`AccountAPIToken` security scheme — HTTP bearer, not the `Token token=` scheme some older G2 docs describe.)
+
+### Pagination
+
+Cursor-based: request `page[size]`, follow `links.next` (a full URL) until it's `null`. Not page-number based.
 
 ### Field mapping
 
 | G2 field | Shared schema |
 |----------|---------------|
-| `attributes.title` + `attributes.body` | `text` |
-| `attributes.rating` (/10) | `rating` (/5) |
+| `attributes.title` + flattened `attributes.answers` | `text` |
+| `attributes.star_rating` (already 1–5) | `rating` |
 | `attributes.submitted_at` | `timestamp` |
-| `attributes.reviewer.title` | `metadata.reviewer_role` |
 | `attributes.product_name` | `company` |
+| included `user` (via `?include=user`) | `customer_id`, `metadata.reviewer_company`, `metadata.reviewer_industry` |
+
+`answers` has no fixed schema per G2's OpenAPI spec ("Formatted question answers (pros, cons, etc.)") — `normalizeG2ApiReview` flattens every string leaf it finds rather than assuming specific keys.
 
 ## Setup
 

@@ -52,7 +52,9 @@ Every source normalizes immediately on ingest:
 
 ### Why a custom G2 MCP server?
 
-G2 has **no official MCP server as of 2026**. The `/mcp-server` package wraps the Partner API (`https://data.g2.com/api/v1/reviews`) with `Authorization: Token token=<G2_API_KEY>`, normalizes into the shared schema, and upserts to Supabase. Keeping it as a separate deployable unit means Claude Desktop (or any MCP client) can drive G2 ingestion independently of the Next.js app.
+G2 has **no official MCP server as of 2026**. The `/mcp-server` package wraps the Partner API v2 (`GET https://data.g2.com/api/v2/products/{product_id}/reviews`, `Authorization: Bearer <G2_API_KEY>`, cursor pagination), normalizes into the shared schema, and upserts to Supabase. Keeping it as a separate deployable unit means Claude Desktop (or any MCP client) can drive G2 ingestion independently of the Next.js app.
+
+A valid `G2_API_KEY` alone isn't sufficient — G2 also requires a **data subscription** granted for the specific `product_id` (via the partner portal); a key with no subscription authenticates fine but gets `403` on every product's reviews. See `mcp-server/README.md` for the exact auth/pagination/field-mapping shape.
 
 ## Pipeline design
 
