@@ -52,7 +52,7 @@ export async function cachedJsonCompletion<T>(opts: {
   const client = getClient();
   const response = await client.messages.create({
     model: MODEL,
-    max_tokens: 1024,
+    max_tokens: 4096,
     system: [
       {
         type: "text",
