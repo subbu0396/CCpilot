@@ -1,6 +1,13 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 
+// Node.js < 22 has no native WebSocket global, which @supabase/realtime-js
+// requires even though this app never opens a realtime subscription.
+const realtimeTransport =
+  typeof WebSocket === "undefined"
+    ? { transport: require("ws") }
+    : undefined;
+
 export function createBrowserClient(): SupabaseClient<Database> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -9,7 +16,9 @@ export function createBrowserClient(): SupabaseClient<Database> {
       "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY"
     );
   }
-  return createClient<Database>(url, key);
+  return createClient<Database>(url, key, {
+    realtime: realtimeTransport,
+  });
 }
 
 export function createServiceClient(): SupabaseClient<Database> {
@@ -22,6 +31,7 @@ export function createServiceClient(): SupabaseClient<Database> {
   }
   return createClient<Database>(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
+    realtime: realtimeTransport,
   });
 }
 

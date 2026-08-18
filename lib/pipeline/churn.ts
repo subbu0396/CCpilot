@@ -11,7 +11,10 @@ import {
   type TokenUsage,
 } from "./claude";
 import { startJob, finishJob } from "./jobs";
+import { mapWithConcurrency } from "./concurrency";
 import { z } from "zod";
+
+const CONCURRENCY = 10;
 
 const SYSTEM = `You are a customer success analyst scoring churn risk from feedback.
 Return ONLY valid JSON:
@@ -139,7 +142,7 @@ export async function runChurn(opts?: {
   let processed = 0;
 
   try {
-    for (const item of items) {
+    await mapWithConcurrency(items, CONCURRENCY, async (item) => {
       let out: ChurnOut;
       if (hasAnthropicKey()) {
         const result = await cachedJsonCompletion({
@@ -170,7 +173,10 @@ export async function runChurn(opts?: {
         weighted_score,
       });
       processed += 1;
-    }
+      if (processed % 25 === 0) {
+        console.log(`[churn] ${processed}/${items.length}`);
+      }
+    });
 
     await finishJob(job.id, {
       status: "completed",

@@ -42,3 +42,4 @@ next-env.d.ts
 mcp-server/node_modules
 mcp-server/dist
 mcp-server/.env
+.env*

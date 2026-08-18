@@ -13,7 +13,10 @@ import {
   type TokenUsage,
 } from "./claude";
 import { startJob, finishJob } from "./jobs";
+import { mapWithConcurrency } from "./concurrency";
 import { z } from "zod";
+
+const CONCURRENCY = 10;
 
 const SYSTEM = `You are a product analyst extracting structured pain points from customer feedback.
 Return ONLY valid JSON matching:
@@ -133,7 +136,7 @@ export async function runPainPoints(opts?: {
   let processed = 0;
 
   try {
-    for (const item of items) {
+    await mapWithConcurrency(items, CONCURRENCY, async (item) => {
       let out: PainOut;
       if (hasAnthropicKey()) {
         const result = await cachedJsonCompletion({
@@ -163,7 +166,7 @@ export async function runPainPoints(opts?: {
       if (processed % 25 === 0) {
         console.log(`[pain_points] ${processed}/${items.length}`);
       }
-    }
+    });
 
     await finishJob(job.id, {
       status: "completed",
