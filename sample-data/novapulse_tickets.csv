@@ -1,0 +1,76 @@
+Ticket Id,Subject,Description,Status,Tags,Requester ID,Created Time,company,Priority
+FD-NO001,Exports is okay,Exports works for basic use but lacks polish compared to alternatives. Ticket #1002.,pending,dashboard_ux,req_201,2026-07-12T11:21:00.000Z,NovaPulse,medium
+FD-NO002,Query Builder issue,Query builder cannot express window functions we need for cohorts. Context: Query Builder workflow on NovaPulse.,solved,exports,req_202,2026-07-11T12:28:00.000Z,NovaPulse,high
+FD-NO003,Alerts issue,Anomaly alerts fire too late — often hours after the spike. Context: Alerts workflow on NovaPulse.,closed,query_builder,req_203,2026-07-10T13:35:00.000Z,NovaPulse,high
+FD-NO004,Performance issue,Sharing a dashboard with view-only users still allows chart edits. Context: Performance workflow on NovaPulse.,open,alerts,req_204,2026-07-09T14:42:00.000Z,NovaPulse,high
+FD-NO005,Dashboard UX issue,Dark charts are unreadable when exporting to PDF. Context: Dashboard UX workflow on NovaPulse.,pending,performance,req_205,2026-07-08T15:49:00.000Z,NovaPulse,high
+FD-NO006,Exports issue,Snowflake connector drops timezone info on TIMESTAMP_TZ columns. Context: Exports workflow on NovaPulse.,solved,dashboard_ux,req_206,2026-07-07T16:56:00.000Z,NovaPulse,high
+FD-NO007,Considering alternatives — Query Builder,Evaluating Looker because exports and timeouts are blocking exec reporting,closed,exports,req_207,2026-07-06T17:03:00.000Z,NovaPulse,urgent
+FD-NO008,Considering alternatives — Alerts,If query performance is not fixed we cancel before Q4,open,query_builder,req_208,2026-07-05T08:10:00.000Z,NovaPulse,urgent
+FD-NO009,Great performance experience,Once queries are cached the dashboards feel instant,pending,alerts,req_209,2026-07-04T09:17:00.000Z,NovaPulse,medium
+FD-NO010,Great dashboard ux experience,Alert routing to Slack channels is exactly what we needed,solved,performance,req_210,2026-07-03T10:24:00.000Z,NovaPulse,medium
+FD-NO011,Exports is okay,Exports works for basic use but lacks polish compared to alternatives. Ticket #1012.,closed,dashboard_ux,req_211,2026-07-02T11:31:00.000Z,NovaPulse,medium
+FD-NO012,Query Builder issue,Query builder cannot express window functions we need for cohorts. Context: Query Builder workflow on NovaPulse.,open,exports,req_212,2026-07-01T12:38:00.000Z,NovaPulse,high
+FD-NO013,Alerts issue,Anomaly alerts fire too late — often hours after the spike. Context: Alerts workflow on NovaPulse.,pending,query_builder,req_213,2026-06-30T13:45:00.000Z,NovaPulse,high
+FD-NO014,Performance issue,Sharing a dashboard with view-only users still allows chart edits. Context: Performance workflow on NovaPulse.,solved,alerts,req_214,2026-06-29T14:52:00.000Z,NovaPulse,high
+FD-NO015,Dashboard UX issue,Dark charts are unreadable when exporting to PDF. Context: Dashboard UX workflow on NovaPulse.,closed,performance,req_215,2026-06-28T15:59:00.000Z,NovaPulse,high
+FD-NO016,Exports issue,Snowflake connector drops timezone info on TIMESTAMP_TZ columns. Context: Exports workflow on NovaPulse.,open,dashboard_ux,req_216,2026-06-27T16:06:00.000Z,NovaPulse,high
+FD-NO017,Considering alternatives — Query Builder,Third ticket this week about CSV truncation — considering Mode Analytics,pending,exports,req_217,2026-06-26T17:13:00.000Z,NovaPulse,urgent
+FD-NO018,Considering alternatives — Alerts,Frustration escalating: dashboard UX regressions after last release,solved,query_builder,req_218,2026-06-25T08:20:00.000Z,NovaPulse,urgent
+FD-NO019,Great performance experience,Once queries are cached the dashboards feel instant,closed,alerts,req_219,2026-06-24T09:27:00.000Z,NovaPulse,medium
+FD-NO020,Great dashboard ux experience,Alert routing to Slack channels is exactly what we needed,open,performance,req_220,2026-06-23T10:34:00.000Z,NovaPulse,medium
+FD-NO021,Exports is okay,Exports works for basic use but lacks polish compared to alternatives. Ticket #1022.,pending,dashboard_ux,req_221,2026-06-22T11:41:00.000Z,NovaPulse,medium
+FD-NO022,Query Builder issue,Query builder cannot express window functions we need for cohorts. Context: Query Builder workflow on NovaPulse.,solved,exports,req_222,2026-06-21T12:48:00.000Z,NovaPulse,high
+FD-NO023,Alerts issue,Anomaly alerts fire too late — often hours after the spike. Context: Alerts workflow on NovaPulse.,closed,query_builder,req_223,2026-06-20T13:55:00.000Z,NovaPulse,high
+FD-NO024,Performance issue,Sharing a dashboard with view-only users still allows chart edits. Context: Performance workflow on NovaPulse.,open,alerts,req_224,2026-06-19T14:02:00.000Z,NovaPulse,high
+FD-NO025,Dashboard UX issue,Dark charts are unreadable when exporting to PDF. Context: Dashboard UX workflow on NovaPulse.,pending,performance,req_225,2026-06-18T15:09:00.000Z,NovaPulse,high
+FD-NO026,Exports issue,Snowflake connector drops timezone info on TIMESTAMP_TZ columns. Context: Exports workflow on NovaPulse.,solved,dashboard_ux,req_226,2026-06-17T16:16:00.000Z,NovaPulse,high
+FD-NO027,Considering alternatives — Query Builder,Evaluating Looker because exports and timeouts are blocking exec reporting,closed,exports,req_227,2026-06-16T17:23:00.000Z,NovaPulse,urgent
+FD-NO028,Considering alternatives — Alerts,If query performance is not fixed we cancel before Q4,open,query_builder,req_228,2026-06-15T08:30:00.000Z,NovaPulse,urgent
+FD-NO029,Great performance experience,Once queries are cached the dashboards feel instant,pending,alerts,req_229,2026-06-14T09:37:00.000Z,NovaPulse,medium
+FD-NO030,Great dashboard ux experience,Alert routing to Slack channels is exactly what we needed,solved,performance,req_230,2026-06-13T10:44:00.000Z,NovaPulse,medium
+FD-NO031,Exports is okay,Exports works for basic use but lacks polish compared to alternatives. Ticket #1032.,closed,dashboard_ux,req_231,2026-06-12T11:51:00.000Z,NovaPulse,medium
+FD-NO032,Query Builder issue,Query builder cannot express window functions we need for cohorts. Context: Query Builder workflow on NovaPulse.,open,exports,req_232,2026-06-11T12:58:00.000Z,NovaPulse,high
+FD-NO033,Alerts issue,Anomaly alerts fire too late — often hours after the spike. Context: Alerts workflow on NovaPulse.,pending,query_builder,req_233,2026-06-10T13:05:00.000Z,NovaPulse,high
+FD-NO034,Performance issue,Sharing a dashboard with view-only users still allows chart edits. Context: Performance workflow on NovaPulse.,solved,alerts,req_234,2026-06-09T14:12:00.000Z,NovaPulse,high
+FD-NO035,Dashboard UX issue,Dark charts are unreadable when exporting to PDF. Context: Dashboard UX workflow on NovaPulse.,closed,performance,req_235,2026-06-08T15:19:00.000Z,NovaPulse,high
+FD-NO036,Exports issue,Snowflake connector drops timezone info on TIMESTAMP_TZ columns. Context: Exports workflow on NovaPulse.,open,dashboard_ux,req_236,2026-06-07T16:26:00.000Z,NovaPulse,high
+FD-NO037,Considering alternatives — Query Builder,Third ticket this week about CSV truncation — considering Mode Analytics,pending,exports,req_237,2026-06-06T17:33:00.000Z,NovaPulse,urgent
+FD-NO038,Considering alternatives — Alerts,Frustration escalating: dashboard UX regressions after last release,solved,query_builder,req_238,2026-06-05T08:40:00.000Z,NovaPulse,urgent
+FD-NO039,Great performance experience,Once queries are cached the dashboards feel instant,closed,alerts,req_239,2026-06-04T09:47:00.000Z,NovaPulse,medium
+FD-NO040,Great dashboard ux experience,Alert routing to Slack channels is exactly what we needed,open,performance,req_240,2026-06-03T10:54:00.000Z,NovaPulse,medium
+FD-NO041,Exports is okay,Exports works for basic use but lacks polish compared to alternatives. Ticket #1042.,pending,dashboard_ux,req_241,2026-06-02T11:01:00.000Z,NovaPulse,medium
+FD-NO042,Query Builder issue,Query builder cannot express window functions we need for cohorts. Context: Query Builder workflow on NovaPulse.,solved,exports,req_242,2026-06-01T12:08:00.000Z,NovaPulse,high
+FD-NO043,Alerts issue,Anomaly alerts fire too late — often hours after the spike. Context: Alerts workflow on NovaPulse.,closed,query_builder,req_243,2026-05-31T13:15:00.000Z,NovaPulse,high
+FD-NO044,Performance issue,Sharing a dashboard with view-only users still allows chart edits. Context: Performance workflow on NovaPulse.,open,alerts,req_244,2026-05-30T14:22:00.000Z,NovaPulse,high
+FD-NO045,Dashboard UX issue,Dark charts are unreadable when exporting to PDF. Context: Dashboard UX workflow on NovaPulse.,pending,performance,req_245,2026-05-29T15:29:00.000Z,NovaPulse,high
+FD-NO046,Exports issue,Snowflake connector drops timezone info on TIMESTAMP_TZ columns. Context: Exports workflow on NovaPulse.,solved,dashboard_ux,req_246,2026-05-28T16:36:00.000Z,NovaPulse,high
+FD-NO047,Considering alternatives — Query Builder,Evaluating Looker because exports and timeouts are blocking exec reporting,closed,exports,req_247,2026-05-27T17:43:00.000Z,NovaPulse,urgent
+FD-NO048,Considering alternatives — Alerts,If query performance is not fixed we cancel before Q4,open,query_builder,req_248,2026-05-26T08:50:00.000Z,NovaPulse,urgent
+FD-NO049,Great performance experience,Once queries are cached the dashboards feel instant,pending,alerts,req_249,2026-05-25T09:57:00.000Z,NovaPulse,medium
+FD-NO050,Great dashboard ux experience,Alert routing to Slack channels is exactly what we needed,solved,performance,req_250,2026-05-24T10:04:00.000Z,NovaPulse,medium
+FD-NO051,Exports is okay,Exports works for basic use but lacks polish compared to alternatives. Ticket #1052.,closed,dashboard_ux,req_251,2026-05-23T11:11:00.000Z,NovaPulse,medium
+FD-NO052,Query Builder issue,Query builder cannot express window functions we need for cohorts. Context: Query Builder workflow on NovaPulse.,open,exports,req_252,2026-05-22T12:18:00.000Z,NovaPulse,high
+FD-NO053,Alerts issue,Anomaly alerts fire too late — often hours after the spike. Context: Alerts workflow on NovaPulse.,pending,query_builder,req_253,2026-05-21T13:25:00.000Z,NovaPulse,high
+FD-NO054,Performance issue,Sharing a dashboard with view-only users still allows chart edits. Context: Performance workflow on NovaPulse.,solved,alerts,req_254,2026-05-20T14:32:00.000Z,NovaPulse,high
+FD-NO055,Dashboard UX issue,Dark charts are unreadable when exporting to PDF. Context: Dashboard UX workflow on NovaPulse.,closed,performance,req_255,2026-05-19T15:39:00.000Z,NovaPulse,high
+FD-NO056,Exports issue,Snowflake connector drops timezone info on TIMESTAMP_TZ columns. Context: Exports workflow on NovaPulse.,open,dashboard_ux,req_256,2026-05-18T16:46:00.000Z,NovaPulse,high
+FD-NO057,Considering alternatives — Query Builder,Third ticket this week about CSV truncation — considering Mode Analytics,pending,exports,req_257,2026-05-17T17:53:00.000Z,NovaPulse,urgent
+FD-NO058,Considering alternatives — Alerts,Frustration escalating: dashboard UX regressions after last release,solved,query_builder,req_258,2026-05-16T08:00:00.000Z,NovaPulse,urgent
+FD-NO059,Great performance experience,Once queries are cached the dashboards feel instant,closed,alerts,req_259,2026-05-15T09:07:00.000Z,NovaPulse,medium
+FD-NO060,Great dashboard ux experience,Alert routing to Slack channels is exactly what we needed,open,performance,req_260,2026-05-14T10:14:00.000Z,NovaPulse,medium
+FD-NO061,Exports is okay,Exports works for basic use but lacks polish compared to alternatives. Ticket #1062.,pending,dashboard_ux,req_261,2026-05-13T11:21:00.000Z,NovaPulse,medium
+FD-NO062,Query Builder issue,Query builder cannot express window functions we need for cohorts. Context: Query Builder workflow on NovaPulse.,solved,exports,req_262,2026-05-12T12:28:00.000Z,NovaPulse,high
+FD-NO063,Alerts issue,Anomaly alerts fire too late — often hours after the spike. Context: Alerts workflow on NovaPulse.,closed,query_builder,req_263,2026-05-11T13:35:00.000Z,NovaPulse,high
+FD-NO064,Performance issue,Sharing a dashboard with view-only users still allows chart edits. Context: Performance workflow on NovaPulse.,open,alerts,req_264,2026-05-10T14:42:00.000Z,NovaPulse,high
+FD-NO065,Dashboard UX issue,Dark charts are unreadable when exporting to PDF. Context: Dashboard UX workflow on NovaPulse.,pending,performance,req_265,2026-05-09T15:49:00.000Z,NovaPulse,high
+FD-NO066,Exports issue,Snowflake connector drops timezone info on TIMESTAMP_TZ columns. Context: Exports workflow on NovaPulse.,solved,dashboard_ux,req_266,2026-05-08T16:56:00.000Z,NovaPulse,high
+FD-NO067,Considering alternatives — Query Builder,Evaluating Looker because exports and timeouts are blocking exec reporting,closed,exports,req_267,2026-05-07T17:03:00.000Z,NovaPulse,urgent
+FD-NO068,Considering alternatives — Alerts,If query performance is not fixed we cancel before Q4,open,query_builder,req_268,2026-05-06T08:10:00.000Z,NovaPulse,urgent
+FD-NO069,Great performance experience,Once queries are cached the dashboards feel instant,pending,alerts,req_269,2026-05-05T09:17:00.000Z,NovaPulse,medium
+FD-NO070,Great dashboard ux experience,Alert routing to Slack channels is exactly what we needed,solved,performance,req_270,2026-05-04T10:24:00.000Z,NovaPulse,medium
+FD-NO071,Exports is okay,Exports works for basic use but lacks polish compared to alternatives. Ticket #1072.,closed,dashboard_ux,req_271,2026-05-03T11:31:00.000Z,NovaPulse,medium
+FD-NO072,Query Builder issue,Query builder cannot express window functions we need for cohorts. Context: Query Builder workflow on NovaPulse.,open,exports,req_272,2026-05-02T12:38:00.000Z,NovaPulse,high
+FD-NO073,Alerts issue,Anomaly alerts fire too late — often hours after the spike. Context: Alerts workflow on NovaPulse.,pending,query_builder,req_273,2026-05-01T13:45:00.000Z,NovaPulse,high
+FD-NO074,Performance issue,Sharing a dashboard with view-only users still allows chart edits. Context: Performance workflow on NovaPulse.,solved,alerts,req_274,2026-04-30T14:52:00.000Z,NovaPulse,high
+FD-NO075,Dashboard UX issue,Dark charts are unreadable when exporting to PDF. Context: Dashboard UX workflow on NovaPulse.,closed,performance,req_275,2026-04-29T15:59:00.000Z,NovaPulse,high

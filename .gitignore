@@ -28,9 +28,17 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# local demo store
+/data
+
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# mcp
+mcp-server/node_modules
+mcp-server/dist
+mcp-server/.env

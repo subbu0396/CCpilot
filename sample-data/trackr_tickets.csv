@@ -1,0 +1,76 @@
+id,subject,description,status,tags,requester_id,created_at,company,priority
+10001,Email Sync issue,Email tracking misses threads from our Google Workspace alias. Context: Email Sync workflow on Trackr.,pending,integrations,zd_user_001,2026-07-11T12:28:00.000Z,Trackr,high
+10002,Forecasting issue,Pipeline board freezes when we have more than 2k open deals. Context: Forecasting workflow on Trackr.,solved,deal_pipeline,zd_user_002,2026-07-10T13:35:00.000Z,Trackr,high
+10003,Reporting issue,Forecast categories ignore probability overrides set by managers. Context: Reporting workflow on Trackr.,closed,email_sync,zd_user_003,2026-07-09T14:42:00.000Z,Trackr,high
+10004,Integrations issue,HubSpot import drops custom fields silently. Context: Integrations workflow on Trackr.,open,forecasting,zd_user_004,2026-07-08T15:49:00.000Z,Trackr,high
+10005,Deal Pipeline issue,Cannot filter won deals by competitor displaced. Context: Deal Pipeline workflow on Trackr.,pending,reporting,zd_user_005,2026-07-07T16:56:00.000Z,Trackr,high
+10006,Considering alternatives — Email Sync,Sales leadership is piloting HubSpot — reporting gaps are the reason,solved,integrations,zd_user_006,2026-07-06T17:03:00.000Z,Trackr,urgent
+10007,Considering alternatives — Forecasting,We will not renew if Salesforce sync keeps duplicating accounts,closed,deal_pipeline,zd_user_007,2026-07-05T08:10:00.000Z,Trackr,urgent
+10008,Great reporting experience,Deal timeline view is the best we have used in any CRM,open,email_sync,zd_user_008,2026-07-04T09:17:00.000Z,Trackr,normal
+10009,Great integrations experience,Forecast rollups finally match what finance expects,pending,forecasting,zd_user_009,2026-07-03T10:24:00.000Z,Trackr,normal
+10010,Deal Pipeline is okay,Deal Pipeline works for basic use but lacks polish compared to alternatives. Ticket #1012.,solved,reporting,zd_user_010,2026-07-02T11:31:00.000Z,Trackr,normal
+10011,Email Sync issue,Email tracking misses threads from our Google Workspace alias. Context: Email Sync workflow on Trackr.,closed,integrations,zd_user_011,2026-07-01T12:38:00.000Z,Trackr,high
+10012,Forecasting issue,Pipeline board freezes when we have more than 2k open deals. Context: Forecasting workflow on Trackr.,open,deal_pipeline,zd_user_012,2026-06-30T13:45:00.000Z,Trackr,high
+10013,Reporting issue,Forecast categories ignore probability overrides set by managers. Context: Reporting workflow on Trackr.,pending,email_sync,zd_user_013,2026-06-29T14:52:00.000Z,Trackr,high
+10014,Integrations issue,HubSpot import drops custom fields silently. Context: Integrations workflow on Trackr.,solved,forecasting,zd_user_014,2026-06-28T15:59:00.000Z,Trackr,high
+10015,Deal Pipeline issue,Cannot filter won deals by competitor displaced. Context: Deal Pipeline workflow on Trackr.,closed,reporting,zd_user_015,2026-06-27T16:06:00.000Z,Trackr,high
+10016,Considering alternatives — Email Sync,Repeated complaint about pipeline freezes — ops wants to switch,open,integrations,zd_user_016,2026-06-26T17:13:00.000Z,Trackr,urgent
+10017,Considering alternatives — Forecasting,Looking at Pipedrive because custom reports are still impossible,pending,deal_pipeline,zd_user_017,2026-06-25T08:20:00.000Z,Trackr,urgent
+10018,Great reporting experience,Deal timeline view is the best we have used in any CRM,solved,email_sync,zd_user_018,2026-06-24T09:27:00.000Z,Trackr,normal
+10019,Great integrations experience,Forecast rollups finally match what finance expects,closed,forecasting,zd_user_019,2026-06-23T10:34:00.000Z,Trackr,normal
+10020,Deal Pipeline is okay,Deal Pipeline works for basic use but lacks polish compared to alternatives. Ticket #1022.,open,reporting,zd_user_020,2026-06-22T11:41:00.000Z,Trackr,normal
+10021,Email Sync issue,Email tracking misses threads from our Google Workspace alias. Context: Email Sync workflow on Trackr.,pending,integrations,zd_user_021,2026-06-21T12:48:00.000Z,Trackr,high
+10022,Forecasting issue,Pipeline board freezes when we have more than 2k open deals. Context: Forecasting workflow on Trackr.,solved,deal_pipeline,zd_user_022,2026-06-20T13:55:00.000Z,Trackr,high
+10023,Reporting issue,Forecast categories ignore probability overrides set by managers. Context: Reporting workflow on Trackr.,closed,email_sync,zd_user_023,2026-06-19T14:02:00.000Z,Trackr,high
+10024,Integrations issue,HubSpot import drops custom fields silently. Context: Integrations workflow on Trackr.,open,forecasting,zd_user_024,2026-06-18T15:09:00.000Z,Trackr,high
+10025,Deal Pipeline issue,Cannot filter won deals by competitor displaced. Context: Deal Pipeline workflow on Trackr.,pending,reporting,zd_user_025,2026-06-17T16:16:00.000Z,Trackr,high
+10026,Considering alternatives — Email Sync,Sales leadership is piloting HubSpot — reporting gaps are the reason,solved,integrations,zd_user_026,2026-06-16T17:23:00.000Z,Trackr,urgent
+10027,Considering alternatives — Forecasting,We will not renew if Salesforce sync keeps duplicating accounts,closed,deal_pipeline,zd_user_027,2026-06-15T08:30:00.000Z,Trackr,urgent
+10028,Great reporting experience,Deal timeline view is the best we have used in any CRM,open,email_sync,zd_user_028,2026-06-14T09:37:00.000Z,Trackr,normal
+10029,Great integrations experience,Forecast rollups finally match what finance expects,pending,forecasting,zd_user_029,2026-06-13T10:44:00.000Z,Trackr,normal
+10030,Deal Pipeline is okay,Deal Pipeline works for basic use but lacks polish compared to alternatives. Ticket #1032.,solved,reporting,zd_user_030,2026-06-12T11:51:00.000Z,Trackr,normal
+10031,Email Sync issue,Email tracking misses threads from our Google Workspace alias. Context: Email Sync workflow on Trackr.,closed,integrations,zd_user_031,2026-06-11T12:58:00.000Z,Trackr,high
+10032,Forecasting issue,Pipeline board freezes when we have more than 2k open deals. Context: Forecasting workflow on Trackr.,open,deal_pipeline,zd_user_032,2026-06-10T13:05:00.000Z,Trackr,high
+10033,Reporting issue,Forecast categories ignore probability overrides set by managers. Context: Reporting workflow on Trackr.,pending,email_sync,zd_user_033,2026-06-09T14:12:00.000Z,Trackr,high
+10034,Integrations issue,HubSpot import drops custom fields silently. Context: Integrations workflow on Trackr.,solved,forecasting,zd_user_034,2026-06-08T15:19:00.000Z,Trackr,high
+10035,Deal Pipeline issue,Cannot filter won deals by competitor displaced. Context: Deal Pipeline workflow on Trackr.,closed,reporting,zd_user_035,2026-06-07T16:26:00.000Z,Trackr,high
+10036,Considering alternatives — Email Sync,Repeated complaint about pipeline freezes — ops wants to switch,open,integrations,zd_user_036,2026-06-06T17:33:00.000Z,Trackr,urgent
+10037,Considering alternatives — Forecasting,Looking at Pipedrive because custom reports are still impossible,pending,deal_pipeline,zd_user_037,2026-06-05T08:40:00.000Z,Trackr,urgent
+10038,Great reporting experience,Deal timeline view is the best we have used in any CRM,solved,email_sync,zd_user_038,2026-06-04T09:47:00.000Z,Trackr,normal
+10039,Great integrations experience,Forecast rollups finally match what finance expects,closed,forecasting,zd_user_039,2026-06-03T10:54:00.000Z,Trackr,normal
+10040,Deal Pipeline is okay,Deal Pipeline works for basic use but lacks polish compared to alternatives. Ticket #1042.,open,reporting,zd_user_040,2026-06-02T11:01:00.000Z,Trackr,normal
+10041,Email Sync issue,Email tracking misses threads from our Google Workspace alias. Context: Email Sync workflow on Trackr.,pending,integrations,zd_user_041,2026-06-01T12:08:00.000Z,Trackr,high
+10042,Forecasting issue,Pipeline board freezes when we have more than 2k open deals. Context: Forecasting workflow on Trackr.,solved,deal_pipeline,zd_user_042,2026-05-31T13:15:00.000Z,Trackr,high
+10043,Reporting issue,Forecast categories ignore probability overrides set by managers. Context: Reporting workflow on Trackr.,closed,email_sync,zd_user_043,2026-05-30T14:22:00.000Z,Trackr,high
+10044,Integrations issue,HubSpot import drops custom fields silently. Context: Integrations workflow on Trackr.,open,forecasting,zd_user_044,2026-05-29T15:29:00.000Z,Trackr,high
+10045,Deal Pipeline issue,Cannot filter won deals by competitor displaced. Context: Deal Pipeline workflow on Trackr.,pending,reporting,zd_user_045,2026-05-28T16:36:00.000Z,Trackr,high
+10046,Considering alternatives — Email Sync,Sales leadership is piloting HubSpot — reporting gaps are the reason,solved,integrations,zd_user_046,2026-05-27T17:43:00.000Z,Trackr,urgent
+10047,Considering alternatives — Forecasting,We will not renew if Salesforce sync keeps duplicating accounts,closed,deal_pipeline,zd_user_047,2026-05-26T08:50:00.000Z,Trackr,urgent
+10048,Great reporting experience,Deal timeline view is the best we have used in any CRM,open,email_sync,zd_user_048,2026-05-25T09:57:00.000Z,Trackr,normal
+10049,Great integrations experience,Forecast rollups finally match what finance expects,pending,forecasting,zd_user_049,2026-05-24T10:04:00.000Z,Trackr,normal
+10050,Deal Pipeline is okay,Deal Pipeline works for basic use but lacks polish compared to alternatives. Ticket #1052.,solved,reporting,zd_user_050,2026-05-23T11:11:00.000Z,Trackr,normal
+10051,Email Sync issue,Email tracking misses threads from our Google Workspace alias. Context: Email Sync workflow on Trackr.,closed,integrations,zd_user_051,2026-05-22T12:18:00.000Z,Trackr,high
+10052,Forecasting issue,Pipeline board freezes when we have more than 2k open deals. Context: Forecasting workflow on Trackr.,open,deal_pipeline,zd_user_052,2026-05-21T13:25:00.000Z,Trackr,high
+10053,Reporting issue,Forecast categories ignore probability overrides set by managers. Context: Reporting workflow on Trackr.,pending,email_sync,zd_user_053,2026-05-20T14:32:00.000Z,Trackr,high
+10054,Integrations issue,HubSpot import drops custom fields silently. Context: Integrations workflow on Trackr.,solved,forecasting,zd_user_054,2026-05-19T15:39:00.000Z,Trackr,high
+10055,Deal Pipeline issue,Cannot filter won deals by competitor displaced. Context: Deal Pipeline workflow on Trackr.,closed,reporting,zd_user_055,2026-05-18T16:46:00.000Z,Trackr,high
+10056,Considering alternatives — Email Sync,Repeated complaint about pipeline freezes — ops wants to switch,open,integrations,zd_user_056,2026-05-17T17:53:00.000Z,Trackr,urgent
+10057,Considering alternatives — Forecasting,Looking at Pipedrive because custom reports are still impossible,pending,deal_pipeline,zd_user_057,2026-05-16T08:00:00.000Z,Trackr,urgent
+10058,Great reporting experience,Deal timeline view is the best we have used in any CRM,solved,email_sync,zd_user_058,2026-05-15T09:07:00.000Z,Trackr,normal
+10059,Great integrations experience,Forecast rollups finally match what finance expects,closed,forecasting,zd_user_059,2026-05-14T10:14:00.000Z,Trackr,normal
+10060,Deal Pipeline is okay,Deal Pipeline works for basic use but lacks polish compared to alternatives. Ticket #1062.,open,reporting,zd_user_060,2026-05-13T11:21:00.000Z,Trackr,normal
+10061,Email Sync issue,Email tracking misses threads from our Google Workspace alias. Context: Email Sync workflow on Trackr.,pending,integrations,zd_user_061,2026-05-12T12:28:00.000Z,Trackr,high
+10062,Forecasting issue,Pipeline board freezes when we have more than 2k open deals. Context: Forecasting workflow on Trackr.,solved,deal_pipeline,zd_user_062,2026-05-11T13:35:00.000Z,Trackr,high
+10063,Reporting issue,Forecast categories ignore probability overrides set by managers. Context: Reporting workflow on Trackr.,closed,email_sync,zd_user_063,2026-05-10T14:42:00.000Z,Trackr,high
+10064,Integrations issue,HubSpot import drops custom fields silently. Context: Integrations workflow on Trackr.,open,forecasting,zd_user_064,2026-05-09T15:49:00.000Z,Trackr,high
+10065,Deal Pipeline issue,Cannot filter won deals by competitor displaced. Context: Deal Pipeline workflow on Trackr.,pending,reporting,zd_user_065,2026-05-08T16:56:00.000Z,Trackr,high
+10066,Considering alternatives — Email Sync,Sales leadership is piloting HubSpot — reporting gaps are the reason,solved,integrations,zd_user_066,2026-05-07T17:03:00.000Z,Trackr,urgent
+10067,Considering alternatives — Forecasting,We will not renew if Salesforce sync keeps duplicating accounts,closed,deal_pipeline,zd_user_067,2026-05-06T08:10:00.000Z,Trackr,urgent
+10068,Great reporting experience,Deal timeline view is the best we have used in any CRM,open,email_sync,zd_user_068,2026-05-05T09:17:00.000Z,Trackr,normal
+10069,Great integrations experience,Forecast rollups finally match what finance expects,pending,forecasting,zd_user_069,2026-05-04T10:24:00.000Z,Trackr,normal
+10070,Deal Pipeline is okay,Deal Pipeline works for basic use but lacks polish compared to alternatives. Ticket #1072.,solved,reporting,zd_user_070,2026-05-03T11:31:00.000Z,Trackr,normal
+10071,Email Sync issue,Email tracking misses threads from our Google Workspace alias. Context: Email Sync workflow on Trackr.,closed,integrations,zd_user_071,2026-05-02T12:38:00.000Z,Trackr,high
+10072,Forecasting issue,Pipeline board freezes when we have more than 2k open deals. Context: Forecasting workflow on Trackr.,open,deal_pipeline,zd_user_072,2026-05-01T13:45:00.000Z,Trackr,high
+10073,Reporting issue,Forecast categories ignore probability overrides set by managers. Context: Reporting workflow on Trackr.,pending,email_sync,zd_user_073,2026-04-30T14:52:00.000Z,Trackr,high
+10074,Integrations issue,HubSpot import drops custom fields silently. Context: Integrations workflow on Trackr.,solved,forecasting,zd_user_074,2026-04-29T15:59:00.000Z,Trackr,high
+10075,Deal Pipeline issue,Cannot filter won deals by competitor displaced. Context: Deal Pipeline workflow on Trackr.,closed,reporting,zd_user_075,2026-04-28T16:06:00.000Z,Trackr,high

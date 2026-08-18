@@ -1,0 +1,76 @@
+reviewId,userName,score,content,at,company,thumbsUpCount
+ps-flo-001,user_fl001,5,Templates saved our team hours when spinning up new client projects,2026-07-14T09:07:00.000Z,Flowdesk,1
+ps-flo-002,user_fl002,3,Mobile Sync works for basic use but lacks polish compared to alternatives. Ticket #1002.,2026-07-13T10:14:00.000Z,Flowdesk,2
+ps-flo-003,user_fl003,3,Push notifications fire twice for the same task assignment. Context: Notifications workflow on Flowdesk.,2026-07-12T11:21:00.000Z,Flowdesk,3
+ps-flo-004,user_fl004,2,Project templates cannot be shared across workspaces. Context: Templates workflow on Flowdesk.,2026-07-11T12:28:00.000Z,Flowdesk,4
+ps-flo-005,user_fl005,3,Cannot nest subtasks more than two levels deep. Context: Onboarding workflow on Flowdesk.,2026-07-10T13:35:00.000Z,Flowdesk,0
+ps-flo-006,user_fl006,2,SSO setup docs are outdated and broke our Okta trial. Context: Permissions workflow on Flowdesk.,2026-07-09T14:42:00.000Z,Flowdesk,1
+ps-flo-007,user_fl007,3,Calendar integration drops recurring meetings randomly. Context: Mobile Sync workflow on Flowdesk.,2026-07-08T15:49:00.000Z,Flowdesk,2
+ps-flo-008,user_fl008,1,We are evaluating Asana because onboarding still takes a full week,2026-07-07T16:56:00.000Z,Flowdesk,3
+ps-flo-009,user_fl009,2,If mobile sync is not fixed we will cancel at renewal,2026-07-06T17:03:00.000Z,Flowdesk,4
+ps-flo-010,user_fl010,4,Love the clean board view — finally replaced our sticky-note chaos,2026-07-05T08:10:00.000Z,Flowdesk,0
+ps-flo-011,user_fl011,5,Templates saved our team hours when spinning up new client projects,2026-07-04T09:17:00.000Z,Flowdesk,1
+ps-flo-012,user_fl012,3,Mobile Sync works for basic use but lacks polish compared to alternatives. Ticket #1012.,2026-07-03T10:24:00.000Z,Flowdesk,2
+ps-flo-013,user_fl013,3,Push notifications fire twice for the same task assignment. Context: Notifications workflow on Flowdesk.,2026-07-02T11:31:00.000Z,Flowdesk,3
+ps-flo-014,user_fl014,2,Project templates cannot be shared across workspaces. Context: Templates workflow on Flowdesk.,2026-07-01T12:38:00.000Z,Flowdesk,4
+ps-flo-015,user_fl015,3,Cannot nest subtasks more than two levels deep. Context: Onboarding workflow on Flowdesk.,2026-06-30T13:45:00.000Z,Flowdesk,0
+ps-flo-016,user_fl016,2,SSO setup docs are outdated and broke our Okta trial. Context: Permissions workflow on Flowdesk.,2026-06-29T14:52:00.000Z,Flowdesk,1
+ps-flo-017,user_fl017,3,Calendar integration drops recurring meetings randomly. Context: Mobile Sync workflow on Flowdesk.,2026-06-28T15:59:00.000Z,Flowdesk,2
+ps-flo-018,user_fl018,1,Third escalation this month about permissions — considering Monday.com,2026-06-27T16:06:00.000Z,Flowdesk,3
+ps-flo-019,user_fl019,2,Repeated complaint: guests see private threads. Escalating to our VP,2026-06-26T17:13:00.000Z,Flowdesk,4
+ps-flo-020,user_fl020,4,Love the clean board view — finally replaced our sticky-note chaos,2026-06-25T08:20:00.000Z,Flowdesk,0
+ps-flo-021,user_fl021,5,Templates saved our team hours when spinning up new client projects,2026-06-24T09:27:00.000Z,Flowdesk,1
+ps-flo-022,user_fl022,3,Mobile Sync works for basic use but lacks polish compared to alternatives. Ticket #1022.,2026-06-23T10:34:00.000Z,Flowdesk,2
+ps-flo-023,user_fl023,3,Push notifications fire twice for the same task assignment. Context: Notifications workflow on Flowdesk.,2026-06-22T11:41:00.000Z,Flowdesk,3
+ps-flo-024,user_fl024,2,Project templates cannot be shared across workspaces. Context: Templates workflow on Flowdesk.,2026-06-21T12:48:00.000Z,Flowdesk,4
+ps-flo-025,user_fl025,3,Cannot nest subtasks more than two levels deep. Context: Onboarding workflow on Flowdesk.,2026-06-20T13:55:00.000Z,Flowdesk,0
+ps-flo-026,user_fl026,2,SSO setup docs are outdated and broke our Okta trial. Context: Permissions workflow on Flowdesk.,2026-06-19T14:02:00.000Z,Flowdesk,1
+ps-flo-027,user_fl027,3,Calendar integration drops recurring meetings randomly. Context: Mobile Sync workflow on Flowdesk.,2026-06-18T15:09:00.000Z,Flowdesk,2
+ps-flo-028,user_fl028,1,We are evaluating Asana because onboarding still takes a full week,2026-06-17T16:16:00.000Z,Flowdesk,3
+ps-flo-029,user_fl029,2,If mobile sync is not fixed we will cancel at renewal,2026-06-16T17:23:00.000Z,Flowdesk,4
+ps-flo-030,user_fl030,4,Love the clean board view — finally replaced our sticky-note chaos,2026-06-15T08:30:00.000Z,Flowdesk,0
+ps-flo-031,user_fl031,5,Templates saved our team hours when spinning up new client projects,2026-06-14T09:37:00.000Z,Flowdesk,1
+ps-flo-032,user_fl032,3,Mobile Sync works for basic use but lacks polish compared to alternatives. Ticket #1032.,2026-06-13T10:44:00.000Z,Flowdesk,2
+ps-flo-033,user_fl033,3,Push notifications fire twice for the same task assignment. Context: Notifications workflow on Flowdesk.,2026-06-12T11:51:00.000Z,Flowdesk,3
+ps-flo-034,user_fl034,2,Project templates cannot be shared across workspaces. Context: Templates workflow on Flowdesk.,2026-06-11T12:58:00.000Z,Flowdesk,4
+ps-flo-035,user_fl035,3,Cannot nest subtasks more than two levels deep. Context: Onboarding workflow on Flowdesk.,2026-06-10T13:05:00.000Z,Flowdesk,0
+ps-flo-036,user_fl036,2,SSO setup docs are outdated and broke our Okta trial. Context: Permissions workflow on Flowdesk.,2026-06-09T14:12:00.000Z,Flowdesk,1
+ps-flo-037,user_fl037,3,Calendar integration drops recurring meetings randomly. Context: Mobile Sync workflow on Flowdesk.,2026-06-08T15:19:00.000Z,Flowdesk,2
+ps-flo-038,user_fl038,1,Third escalation this month about permissions — considering Monday.com,2026-06-07T16:26:00.000Z,Flowdesk,3
+ps-flo-039,user_fl039,2,Repeated complaint: guests see private threads. Escalating to our VP,2026-06-06T17:33:00.000Z,Flowdesk,4
+ps-flo-040,user_fl040,4,Love the clean board view — finally replaced our sticky-note chaos,2026-06-05T08:40:00.000Z,Flowdesk,0
+ps-flo-041,user_fl041,5,Templates saved our team hours when spinning up new client projects,2026-06-04T09:47:00.000Z,Flowdesk,1
+ps-flo-042,user_fl042,3,Mobile Sync works for basic use but lacks polish compared to alternatives. Ticket #1042.,2026-06-03T10:54:00.000Z,Flowdesk,2
+ps-flo-043,user_fl043,3,Push notifications fire twice for the same task assignment. Context: Notifications workflow on Flowdesk.,2026-06-02T11:01:00.000Z,Flowdesk,3
+ps-flo-044,user_fl044,2,Project templates cannot be shared across workspaces. Context: Templates workflow on Flowdesk.,2026-06-01T12:08:00.000Z,Flowdesk,4
+ps-flo-045,user_fl045,3,Cannot nest subtasks more than two levels deep. Context: Onboarding workflow on Flowdesk.,2026-05-31T13:15:00.000Z,Flowdesk,0
+ps-flo-046,user_fl046,2,SSO setup docs are outdated and broke our Okta trial. Context: Permissions workflow on Flowdesk.,2026-05-30T14:22:00.000Z,Flowdesk,1
+ps-flo-047,user_fl047,3,Calendar integration drops recurring meetings randomly. Context: Mobile Sync workflow on Flowdesk.,2026-05-29T15:29:00.000Z,Flowdesk,2
+ps-flo-048,user_fl048,1,We are evaluating Asana because onboarding still takes a full week,2026-05-28T16:36:00.000Z,Flowdesk,3
+ps-flo-049,user_fl049,2,If mobile sync is not fixed we will cancel at renewal,2026-05-27T17:43:00.000Z,Flowdesk,4
+ps-flo-050,user_fl050,4,Love the clean board view — finally replaced our sticky-note chaos,2026-05-26T08:50:00.000Z,Flowdesk,0
+ps-flo-051,user_fl051,5,Templates saved our team hours when spinning up new client projects,2026-05-25T09:57:00.000Z,Flowdesk,1
+ps-flo-052,user_fl052,3,Mobile Sync works for basic use but lacks polish compared to alternatives. Ticket #1052.,2026-05-24T10:04:00.000Z,Flowdesk,2
+ps-flo-053,user_fl053,3,Push notifications fire twice for the same task assignment. Context: Notifications workflow on Flowdesk.,2026-05-23T11:11:00.000Z,Flowdesk,3
+ps-flo-054,user_fl054,2,Project templates cannot be shared across workspaces. Context: Templates workflow on Flowdesk.,2026-05-22T12:18:00.000Z,Flowdesk,4
+ps-flo-055,user_fl055,3,Cannot nest subtasks more than two levels deep. Context: Onboarding workflow on Flowdesk.,2026-05-21T13:25:00.000Z,Flowdesk,0
+ps-flo-056,user_fl056,2,SSO setup docs are outdated and broke our Okta trial. Context: Permissions workflow on Flowdesk.,2026-05-20T14:32:00.000Z,Flowdesk,1
+ps-flo-057,user_fl057,3,Calendar integration drops recurring meetings randomly. Context: Mobile Sync workflow on Flowdesk.,2026-05-19T15:39:00.000Z,Flowdesk,2
+ps-flo-058,user_fl058,1,Third escalation this month about permissions — considering Monday.com,2026-05-18T16:46:00.000Z,Flowdesk,3
+ps-flo-059,user_fl059,2,Repeated complaint: guests see private threads. Escalating to our VP,2026-05-17T17:53:00.000Z,Flowdesk,4
+ps-flo-060,user_fl060,4,Love the clean board view — finally replaced our sticky-note chaos,2026-05-16T08:00:00.000Z,Flowdesk,0
+ps-flo-061,user_fl061,5,Templates saved our team hours when spinning up new client projects,2026-05-15T09:07:00.000Z,Flowdesk,1
+ps-flo-062,user_fl062,3,Mobile Sync works for basic use but lacks polish compared to alternatives. Ticket #1062.,2026-05-14T10:14:00.000Z,Flowdesk,2
+ps-flo-063,user_fl063,3,Push notifications fire twice for the same task assignment. Context: Notifications workflow on Flowdesk.,2026-05-13T11:21:00.000Z,Flowdesk,3
+ps-flo-064,user_fl064,2,Project templates cannot be shared across workspaces. Context: Templates workflow on Flowdesk.,2026-05-12T12:28:00.000Z,Flowdesk,4
+ps-flo-065,user_fl065,3,Cannot nest subtasks more than two levels deep. Context: Onboarding workflow on Flowdesk.,2026-05-11T13:35:00.000Z,Flowdesk,0
+ps-flo-066,user_fl066,2,SSO setup docs are outdated and broke our Okta trial. Context: Permissions workflow on Flowdesk.,2026-05-10T14:42:00.000Z,Flowdesk,1
+ps-flo-067,user_fl067,3,Calendar integration drops recurring meetings randomly. Context: Mobile Sync workflow on Flowdesk.,2026-05-09T15:49:00.000Z,Flowdesk,2
+ps-flo-068,user_fl068,1,We are evaluating Asana because onboarding still takes a full week,2026-05-08T16:56:00.000Z,Flowdesk,3
+ps-flo-069,user_fl069,2,If mobile sync is not fixed we will cancel at renewal,2026-05-07T17:03:00.000Z,Flowdesk,4
+ps-flo-070,user_fl070,4,Love the clean board view — finally replaced our sticky-note chaos,2026-05-06T08:10:00.000Z,Flowdesk,0
+ps-flo-071,user_fl071,5,Templates saved our team hours when spinning up new client projects,2026-05-05T09:17:00.000Z,Flowdesk,1
+ps-flo-072,user_fl072,3,Mobile Sync works for basic use but lacks polish compared to alternatives. Ticket #1072.,2026-05-04T10:24:00.000Z,Flowdesk,2
+ps-flo-073,user_fl073,3,Push notifications fire twice for the same task assignment. Context: Notifications workflow on Flowdesk.,2026-05-03T11:31:00.000Z,Flowdesk,3
+ps-flo-074,user_fl074,2,Project templates cannot be shared across workspaces. Context: Templates workflow on Flowdesk.,2026-05-02T12:38:00.000Z,Flowdesk,4
+ps-flo-075,user_fl075,3,Cannot nest subtasks more than two levels deep. Context: Onboarding workflow on Flowdesk.,2026-05-01T13:45:00.000Z,Flowdesk,0

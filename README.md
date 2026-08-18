@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Customer Intelligence Copilot (CCPilot)
 
-## Getting Started
+Full-stack feedback intelligence: ingest Play Store, G2, and support tickets → Claude analysis pipeline → one interactive dashboard.
 
-First, run the development server:
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for pipeline design and extension points.
+
+## Stack
+
+- Next.js 14 (App Router) + TypeScript + Tailwind + shadcn/ui
+- Supabase (Postgres + pgvector) — or local JSON store for demo
+- Anthropic Claude (prompt caching) + Voyage AI embeddings
+- Custom G2 MCP server (`/mcp-server`)
+- Recharts + `@dnd-kit` roadmap board
+
+## Quick start (local demo, no cloud keys)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run generate:sample   # 9 CSVs, 675 rows
+npm run load:sample       # → data/local-db.json
+npm run pipeline:run      # heuristic mode without API keys
+npm run dev               # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Supabase setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Create/open your project and run [`supabase/migrations/001_init.sql`](./supabase/migrations/001_init.sql) in the SQL editor.
+2. Copy [`.env.local.example`](./.env.local.example) → `.env.local` and fill:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+ANTHROPIC_API_KEY=          # optional until pipeline quality review
+VOYAGE_API_KEY=             # optional
+G2_API_KEY=                 # optional — CSV fallback otherwise
+```
 
-## Learn More
+3. Unset `USE_LOCAL_STORE` (or leave unset). Re-run `npm run load:sample` and `npm run pipeline:run`.
 
-To learn more about Next.js, take a look at the following resources:
+## MCP server (G2)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+cd mcp-server && npm install && npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Tools: `fetch_g2_reviews` (live Partner API) and `import_g2_csv` (demo fallback).
 
-## Deploy on Vercel
+> G2 has no official MCP server as of 2026 — this wraps the Partner API directly.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Details: [`mcp-server/README.md`](./mcp-server/README.md)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `npm run generate:sample` | Build `/sample-data` CSVs |
+| `npm run load:sample` | Ingest all 9 files |
+| `npm run pipeline:run` | Run stages 1–5 |
+| `npm run pipeline:pain-points` | Re-run one stage |
+| `npm run dev` | Next.js dashboard |
+
+## Deploy (Vercel)
+
+Connect the repo, set the same env vars, and deploy. Keep `/mcp-server` as a separate process (or invoke its tools from Claude Desktop). Apply the SQL migration to production Supabase before first load.

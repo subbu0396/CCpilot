@@ -1,0 +1,76 @@
+id,title,body,rating,submitted_at,reviewer_title,product_name
+g2-flo-001,Templates issue,Project templates cannot be shared across workspaces. Context: Templates workflow on Flowdesk.,6,2026-07-09T14:42:00.000Z,Engineering Lead,Flowdesk
+g2-flo-002,Onboarding issue,Cannot nest subtasks more than two levels deep. Context: Onboarding workflow on Flowdesk.,4,2026-07-08T15:49:00.000Z,Customer Success,Flowdesk
+g2-flo-003,Permissions issue,SSO setup docs are outdated and broke our Okta trial. Context: Permissions workflow on Flowdesk.,6,2026-07-07T16:56:00.000Z,VP Operations,Flowdesk
+g2-flo-004,Mobile Sync issue,Calendar integration drops recurring meetings randomly. Context: Mobile Sync workflow on Flowdesk.,4,2026-07-06T17:03:00.000Z,Analyst,Flowdesk
+g2-flo-005,Considering alternatives — Notifications,We are evaluating Asana because onboarding still takes a full week,4,2026-07-05T08:10:00.000Z,Product Manager,Flowdesk
+g2-flo-006,Considering alternatives — Templates,If mobile sync is not fixed we will cancel at renewal,2,2026-07-04T09:17:00.000Z,Engineering Lead,Flowdesk
+g2-flo-007,Great onboarding experience,Love the clean board view — finally replaced our sticky-note chaos,10,2026-07-03T10:24:00.000Z,Customer Success,Flowdesk
+g2-flo-008,Great permissions experience,Templates saved our team hours when spinning up new client projects,8,2026-07-02T11:31:00.000Z,VP Operations,Flowdesk
+g2-flo-009,Mobile Sync is okay,Mobile Sync works for basic use but lacks polish compared to alternatives. Ticket #1012.,6,2026-07-01T12:38:00.000Z,Analyst,Flowdesk
+g2-flo-010,Notifications issue,Push notifications fire twice for the same task assignment. Context: Notifications workflow on Flowdesk.,4,2026-06-30T13:45:00.000Z,Product Manager,Flowdesk
+g2-flo-011,Templates issue,Project templates cannot be shared across workspaces. Context: Templates workflow on Flowdesk.,6,2026-06-29T14:52:00.000Z,Engineering Lead,Flowdesk
+g2-flo-012,Onboarding issue,Cannot nest subtasks more than two levels deep. Context: Onboarding workflow on Flowdesk.,4,2026-06-28T15:59:00.000Z,Customer Success,Flowdesk
+g2-flo-013,Permissions issue,SSO setup docs are outdated and broke our Okta trial. Context: Permissions workflow on Flowdesk.,6,2026-06-27T16:06:00.000Z,VP Operations,Flowdesk
+g2-flo-014,Mobile Sync issue,Calendar integration drops recurring meetings randomly. Context: Mobile Sync workflow on Flowdesk.,4,2026-06-26T17:13:00.000Z,Analyst,Flowdesk
+g2-flo-015,Considering alternatives — Notifications,Third escalation this month about permissions — considering Monday.com,4,2026-06-25T08:20:00.000Z,Product Manager,Flowdesk
+g2-flo-016,Considering alternatives — Templates,Repeated complaint: guests see private threads. Escalating to our VP,2,2026-06-24T09:27:00.000Z,Engineering Lead,Flowdesk
+g2-flo-017,Great onboarding experience,Love the clean board view — finally replaced our sticky-note chaos,10,2026-06-23T10:34:00.000Z,Customer Success,Flowdesk
+g2-flo-018,Great permissions experience,Templates saved our team hours when spinning up new client projects,8,2026-06-22T11:41:00.000Z,VP Operations,Flowdesk
+g2-flo-019,Mobile Sync is okay,Mobile Sync works for basic use but lacks polish compared to alternatives. Ticket #1022.,6,2026-06-21T12:48:00.000Z,Analyst,Flowdesk
+g2-flo-020,Notifications issue,Push notifications fire twice for the same task assignment. Context: Notifications workflow on Flowdesk.,4,2026-06-20T13:55:00.000Z,Product Manager,Flowdesk
+g2-flo-021,Templates issue,Project templates cannot be shared across workspaces. Context: Templates workflow on Flowdesk.,6,2026-06-19T14:02:00.000Z,Engineering Lead,Flowdesk
+g2-flo-022,Onboarding issue,Cannot nest subtasks more than two levels deep. Context: Onboarding workflow on Flowdesk.,4,2026-06-18T15:09:00.000Z,Customer Success,Flowdesk
+g2-flo-023,Permissions issue,SSO setup docs are outdated and broke our Okta trial. Context: Permissions workflow on Flowdesk.,6,2026-06-17T16:16:00.000Z,VP Operations,Flowdesk
+g2-flo-024,Mobile Sync issue,Calendar integration drops recurring meetings randomly. Context: Mobile Sync workflow on Flowdesk.,4,2026-06-16T17:23:00.000Z,Analyst,Flowdesk
+g2-flo-025,Considering alternatives — Notifications,We are evaluating Asana because onboarding still takes a full week,4,2026-06-15T08:30:00.000Z,Product Manager,Flowdesk
+g2-flo-026,Considering alternatives — Templates,If mobile sync is not fixed we will cancel at renewal,2,2026-06-14T09:37:00.000Z,Engineering Lead,Flowdesk
+g2-flo-027,Great onboarding experience,Love the clean board view — finally replaced our sticky-note chaos,10,2026-06-13T10:44:00.000Z,Customer Success,Flowdesk
+g2-flo-028,Great permissions experience,Templates saved our team hours when spinning up new client projects,8,2026-06-12T11:51:00.000Z,VP Operations,Flowdesk
+g2-flo-029,Mobile Sync is okay,Mobile Sync works for basic use but lacks polish compared to alternatives. Ticket #1032.,6,2026-06-11T12:58:00.000Z,Analyst,Flowdesk
+g2-flo-030,Notifications issue,Push notifications fire twice for the same task assignment. Context: Notifications workflow on Flowdesk.,4,2026-06-10T13:05:00.000Z,Product Manager,Flowdesk
+g2-flo-031,Templates issue,Project templates cannot be shared across workspaces. Context: Templates workflow on Flowdesk.,6,2026-06-09T14:12:00.000Z,Engineering Lead,Flowdesk
+g2-flo-032,Onboarding issue,Cannot nest subtasks more than two levels deep. Context: Onboarding workflow on Flowdesk.,4,2026-06-08T15:19:00.000Z,Customer Success,Flowdesk
+g2-flo-033,Permissions issue,SSO setup docs are outdated and broke our Okta trial. Context: Permissions workflow on Flowdesk.,6,2026-06-07T16:26:00.000Z,VP Operations,Flowdesk
+g2-flo-034,Mobile Sync issue,Calendar integration drops recurring meetings randomly. Context: Mobile Sync workflow on Flowdesk.,4,2026-06-06T17:33:00.000Z,Analyst,Flowdesk
+g2-flo-035,Considering alternatives — Notifications,Third escalation this month about permissions — considering Monday.com,4,2026-06-05T08:40:00.000Z,Product Manager,Flowdesk
+g2-flo-036,Considering alternatives — Templates,Repeated complaint: guests see private threads. Escalating to our VP,2,2026-06-04T09:47:00.000Z,Engineering Lead,Flowdesk
+g2-flo-037,Great onboarding experience,Love the clean board view — finally replaced our sticky-note chaos,10,2026-06-03T10:54:00.000Z,Customer Success,Flowdesk
+g2-flo-038,Great permissions experience,Templates saved our team hours when spinning up new client projects,8,2026-06-02T11:01:00.000Z,VP Operations,Flowdesk
+g2-flo-039,Mobile Sync is okay,Mobile Sync works for basic use but lacks polish compared to alternatives. Ticket #1042.,6,2026-06-01T12:08:00.000Z,Analyst,Flowdesk
+g2-flo-040,Notifications issue,Push notifications fire twice for the same task assignment. Context: Notifications workflow on Flowdesk.,4,2026-05-31T13:15:00.000Z,Product Manager,Flowdesk
+g2-flo-041,Templates issue,Project templates cannot be shared across workspaces. Context: Templates workflow on Flowdesk.,6,2026-05-30T14:22:00.000Z,Engineering Lead,Flowdesk
+g2-flo-042,Onboarding issue,Cannot nest subtasks more than two levels deep. Context: Onboarding workflow on Flowdesk.,4,2026-05-29T15:29:00.000Z,Customer Success,Flowdesk
+g2-flo-043,Permissions issue,SSO setup docs are outdated and broke our Okta trial. Context: Permissions workflow on Flowdesk.,6,2026-05-28T16:36:00.000Z,VP Operations,Flowdesk
+g2-flo-044,Mobile Sync issue,Calendar integration drops recurring meetings randomly. Context: Mobile Sync workflow on Flowdesk.,4,2026-05-27T17:43:00.000Z,Analyst,Flowdesk
+g2-flo-045,Considering alternatives — Notifications,We are evaluating Asana because onboarding still takes a full week,4,2026-05-26T08:50:00.000Z,Product Manager,Flowdesk
+g2-flo-046,Considering alternatives — Templates,If mobile sync is not fixed we will cancel at renewal,2,2026-05-25T09:57:00.000Z,Engineering Lead,Flowdesk
+g2-flo-047,Great onboarding experience,Love the clean board view — finally replaced our sticky-note chaos,10,2026-05-24T10:04:00.000Z,Customer Success,Flowdesk
+g2-flo-048,Great permissions experience,Templates saved our team hours when spinning up new client projects,8,2026-05-23T11:11:00.000Z,VP Operations,Flowdesk
+g2-flo-049,Mobile Sync is okay,Mobile Sync works for basic use but lacks polish compared to alternatives. Ticket #1052.,6,2026-05-22T12:18:00.000Z,Analyst,Flowdesk
+g2-flo-050,Notifications issue,Push notifications fire twice for the same task assignment. Context: Notifications workflow on Flowdesk.,4,2026-05-21T13:25:00.000Z,Product Manager,Flowdesk
+g2-flo-051,Templates issue,Project templates cannot be shared across workspaces. Context: Templates workflow on Flowdesk.,6,2026-05-20T14:32:00.000Z,Engineering Lead,Flowdesk
+g2-flo-052,Onboarding issue,Cannot nest subtasks more than two levels deep. Context: Onboarding workflow on Flowdesk.,4,2026-05-19T15:39:00.000Z,Customer Success,Flowdesk
+g2-flo-053,Permissions issue,SSO setup docs are outdated and broke our Okta trial. Context: Permissions workflow on Flowdesk.,6,2026-05-18T16:46:00.000Z,VP Operations,Flowdesk
+g2-flo-054,Mobile Sync issue,Calendar integration drops recurring meetings randomly. Context: Mobile Sync workflow on Flowdesk.,4,2026-05-17T17:53:00.000Z,Analyst,Flowdesk
+g2-flo-055,Considering alternatives — Notifications,Third escalation this month about permissions — considering Monday.com,4,2026-05-16T08:00:00.000Z,Product Manager,Flowdesk
+g2-flo-056,Considering alternatives — Templates,Repeated complaint: guests see private threads. Escalating to our VP,2,2026-05-15T09:07:00.000Z,Engineering Lead,Flowdesk
+g2-flo-057,Great onboarding experience,Love the clean board view — finally replaced our sticky-note chaos,10,2026-05-14T10:14:00.000Z,Customer Success,Flowdesk
+g2-flo-058,Great permissions experience,Templates saved our team hours when spinning up new client projects,8,2026-05-13T11:21:00.000Z,VP Operations,Flowdesk
+g2-flo-059,Mobile Sync is okay,Mobile Sync works for basic use but lacks polish compared to alternatives. Ticket #1062.,6,2026-05-12T12:28:00.000Z,Analyst,Flowdesk
+g2-flo-060,Notifications issue,Push notifications fire twice for the same task assignment. Context: Notifications workflow on Flowdesk.,4,2026-05-11T13:35:00.000Z,Product Manager,Flowdesk
+g2-flo-061,Templates issue,Project templates cannot be shared across workspaces. Context: Templates workflow on Flowdesk.,6,2026-05-10T14:42:00.000Z,Engineering Lead,Flowdesk
+g2-flo-062,Onboarding issue,Cannot nest subtasks more than two levels deep. Context: Onboarding workflow on Flowdesk.,4,2026-05-09T15:49:00.000Z,Customer Success,Flowdesk
+g2-flo-063,Permissions issue,SSO setup docs are outdated and broke our Okta trial. Context: Permissions workflow on Flowdesk.,6,2026-05-08T16:56:00.000Z,VP Operations,Flowdesk
+g2-flo-064,Mobile Sync issue,Calendar integration drops recurring meetings randomly. Context: Mobile Sync workflow on Flowdesk.,4,2026-05-07T17:03:00.000Z,Analyst,Flowdesk
+g2-flo-065,Considering alternatives — Notifications,We are evaluating Asana because onboarding still takes a full week,4,2026-05-06T08:10:00.000Z,Product Manager,Flowdesk
+g2-flo-066,Considering alternatives — Templates,If mobile sync is not fixed we will cancel at renewal,2,2026-05-05T09:17:00.000Z,Engineering Lead,Flowdesk
+g2-flo-067,Great onboarding experience,Love the clean board view — finally replaced our sticky-note chaos,10,2026-05-04T10:24:00.000Z,Customer Success,Flowdesk
+g2-flo-068,Great permissions experience,Templates saved our team hours when spinning up new client projects,8,2026-05-03T11:31:00.000Z,VP Operations,Flowdesk
+g2-flo-069,Mobile Sync is okay,Mobile Sync works for basic use but lacks polish compared to alternatives. Ticket #1072.,6,2026-05-02T12:38:00.000Z,Analyst,Flowdesk
+g2-flo-070,Notifications issue,Push notifications fire twice for the same task assignment. Context: Notifications workflow on Flowdesk.,4,2026-05-01T13:45:00.000Z,Product Manager,Flowdesk
+g2-flo-071,Templates issue,Project templates cannot be shared across workspaces. Context: Templates workflow on Flowdesk.,6,2026-04-30T14:52:00.000Z,Engineering Lead,Flowdesk
+g2-flo-072,Onboarding issue,Cannot nest subtasks more than two levels deep. Context: Onboarding workflow on Flowdesk.,4,2026-04-29T15:59:00.000Z,Customer Success,Flowdesk
+g2-flo-073,Permissions issue,SSO setup docs are outdated and broke our Okta trial. Context: Permissions workflow on Flowdesk.,6,2026-04-28T16:06:00.000Z,VP Operations,Flowdesk
+g2-flo-074,Mobile Sync issue,Calendar integration drops recurring meetings randomly. Context: Mobile Sync workflow on Flowdesk.,4,2026-04-27T17:13:00.000Z,Analyst,Flowdesk
+g2-flo-075,Considering alternatives — Notifications,Third escalation this month about permissions — considering Monday.com,4,2026-04-26T08:20:00.000Z,Product Manager,Flowdesk
