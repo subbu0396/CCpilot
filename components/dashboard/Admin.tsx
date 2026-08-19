@@ -7,8 +7,18 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 import type { PipelineStage } from "@/lib/supabase/types";
 import { adminFetch } from "@/lib/auth/admin-client";
+import { SectionHeader } from "./shared/SectionHeader";
 
 const STAGES: { stage: PipelineStage; label: string }[] = [
   { stage: "pain_points", label: "Pain point extraction" },
@@ -133,110 +143,116 @@ export function Admin() {
   }
 
   return (
-    <section id="admin" className="scroll-mt-24">
-      <h2 className="font-[family-name:var(--font-display)] text-2xl text-slate-900">
-        Admin / Pipeline
-      </h2>
-      <p className="mb-4 text-sm text-slate-500">
-        Ingest uploads, G2 sync, and independently re-runnable stages
-      </p>
+    <section>
+      <SectionHeader
+        title="Admin / Pipeline"
+        subtitle="Ingest uploads, G2/Zendesk sync, and independently re-runnable stages"
+      />
 
       <div className="mb-4 grid gap-4 lg:grid-cols-2">
-        <div className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-slate-200/80">
-          <h3 className="mb-3 text-sm font-semibold text-slate-800">CSV / JSON upload</h3>
-          <div className="space-y-3">
-            {(
-              [
-                ["playstore", "Play Store CSV"],
-                ["ticket", "Support tickets (Zendesk / Freshdesk)"],
-              ] as const
-            ).map(([source, label]) => (
-              <div key={source}>
-                <Label className="text-xs text-slate-500">{label}</Label>
-                <Input
-                  type="file"
-                  accept=".csv,.json,text/csv,application/json"
-                  className="mt-1 bg-white"
-                  disabled={running}
-                  onChange={(e) => void onUpload(source, e.target.files?.[0] ?? null)}
-                />
-              </div>
-            ))}
-            <Button onClick={() => void syncG2()} disabled={running}>
-              Sync G2 via MCP
-            </Button>
-            <Button onClick={() => void syncZendesk()} disabled={running}>
-              Sync Zendesk
-            </Button>
-          </div>
-          {preview && (
-            <pre className="mt-3 max-h-40 overflow-auto rounded-md bg-slate-50 p-2 text-[10px] text-slate-600">
-              {preview}
-            </pre>
-          )}
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>CSV / JSON upload</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {(
+                [
+                  ["playstore", "Play Store CSV"],
+                  ["ticket", "Support tickets (Zendesk / Freshdesk)"],
+                ] as const
+              ).map(([source, label]) => (
+                <div key={source}>
+                  <Label className="text-xs text-slate-500">{label}</Label>
+                  <Input
+                    type="file"
+                    accept=".csv,.json,text/csv,application/json"
+                    className="mt-1 bg-white"
+                    disabled={running}
+                    onChange={(e) => void onUpload(source, e.target.files?.[0] ?? null)}
+                  />
+                </div>
+              ))}
+              <Button onClick={() => void syncG2()} disabled={running}>
+                Sync G2 via MCP
+              </Button>
+              <Button onClick={() => void syncZendesk()} disabled={running}>
+                Sync Zendesk
+              </Button>
+            </div>
+            {preview && (
+              <pre className="mt-3 max-h-40 overflow-auto rounded-md bg-muted p-2 text-[10px] text-slate-600">
+                {preview}
+              </pre>
+            )}
+          </CardContent>
+        </Card>
 
-        <div className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-slate-200/80">
-          <h3 className="mb-3 text-sm font-semibold text-slate-800">Cluster controls</h3>
-          <Label className="text-xs text-slate-500">k = {k}</Label>
-          <Slider
-            className="mt-3"
-            min={3}
-            max={16}
-            step={1}
-            value={[k]}
-            onValueChange={(v) => setK(v[0])}
-          />
-          <Button
-            className="mt-4"
-            variant="outline"
-            disabled={running}
-            onClick={() => void runStage("cluster", { k })}
-          >
-            Re-cluster
-          </Button>
+        <Card>
+          <CardHeader>
+            <CardTitle>Cluster controls</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Label className="text-xs text-slate-500">k = {k}</Label>
+            <Slider
+              className="mt-3"
+              min={3}
+              max={16}
+              step={1}
+              value={[k]}
+              onValueChange={(v) => setK(v[0])}
+            />
+            <Button
+              className="mt-4"
+              variant="outline"
+              disabled={running}
+              onClick={() => void runStage("cluster", { k })}
+            >
+              Re-cluster
+            </Button>
 
-          <div className="mt-6 rounded-md bg-slate-50 p-3">
-            <p className="text-[11px] uppercase tracking-wide text-slate-500">
-              Token usage tracker
-            </p>
-            <p className="mt-1 text-lg font-semibold text-slate-900">
-              ${tokenTotals.cost.toFixed(4)}
-            </p>
-            <p className="text-xs text-slate-500">
-              ~{tokenTotals.tokens.toLocaleString()} tokens across recorded jobs
-              {data?.mode === "local" ? " (heuristic mode when no API keys)" : ""}
-            </p>
-          </div>
-        </div>
+            <div className="mt-6 rounded-md bg-muted p-3">
+              <p className="text-[11px] uppercase tracking-wide text-slate-500">
+                Token usage tracker
+              </p>
+              <p className="mt-1 text-lg font-semibold text-slate-900">
+                ${tokenTotals.cost.toFixed(4)}
+              </p>
+              <p className="text-xs text-slate-500">
+                ~{tokenTotals.tokens.toLocaleString()} tokens across recorded jobs
+                {data?.mode === "local" ? " (heuristic mode when no API keys)" : ""}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="overflow-x-auto rounded-lg bg-white shadow-sm ring-1 ring-slate-200/80">
-        <table className="w-full min-w-[700px] text-left text-sm">
-          <thead className="border-b bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
-            <tr>
-              <th className="px-3 py-2">Stage</th>
-              <th className="px-3 py-2">Last run</th>
-              <th className="px-3 py-2">Records</th>
-              <th className="px-3 py-2">Status</th>
-              <th className="px-3 py-2">Re-run</th>
-            </tr>
-          </thead>
-          <tbody>
+      <Card className="py-0">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50 text-[11px] uppercase tracking-wide text-slate-500">
+              <TableHead>Stage</TableHead>
+              <TableHead>Last run</TableHead>
+              <TableHead>Records</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Re-run</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {STAGES.map(({ stage, label }) => {
               const job = latestByStage.get(stage);
               return (
-                <tr key={stage} className="border-b border-slate-100">
-                  <td className="px-3 py-2 font-medium text-slate-800">{label}</td>
-                  <td className="px-3 py-2 text-xs text-slate-500">
+                <TableRow key={stage}>
+                  <TableCell className="font-medium text-slate-800">{label}</TableCell>
+                  <TableCell className="text-xs text-slate-500">
                     {job?.completed_at?.slice(0, 19) ?? job?.created_at?.slice(0, 19) ?? "—"}
-                  </td>
-                  <td className="px-3 py-2">
+                  </TableCell>
+                  <TableCell>
                     {job
                       ? `${job.records_processed}/${job.records_total}`
                       : "—"}
-                  </td>
-                  <td className="px-3 py-2">
+                  </TableCell>
+                  <TableCell>
                     {job ? (
                       <Badge
                         className={
@@ -252,8 +268,8 @@ export function Admin() {
                     ) : (
                       "—"
                     )}
-                  </td>
-                  <td className="px-3 py-2">
+                  </TableCell>
+                  <TableCell>
                     <Button
                       size="sm"
                       variant="outline"
@@ -264,13 +280,13 @@ export function Admin() {
                     >
                       Re-run
                     </Button>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               );
             })}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </Card>
 
       {status && (
         <p className="mt-3 text-sm text-slate-600" role="status">

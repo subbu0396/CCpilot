@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { roadmapToCsv, roadmapToMarkdown } from "@/lib/dashboard/export-roadmap";
 import type { RoadmapBucket } from "@/lib/supabase/types";
 import { adminFetch } from "@/lib/auth/admin-client";
+import { SectionHeader } from "./shared/SectionHeader";
 
 function DraggableCard({
   id,
@@ -35,7 +36,7 @@ function DraggableCard({
       style={style}
       {...listeners}
       {...attributes}
-      className={`cursor-grab rounded-lg bg-white p-3 shadow-sm ring-1 ring-slate-200 active:cursor-grabbing ${
+      className={`cursor-grab rounded-lg bg-card p-3 ring-1 ring-foreground/10 active:cursor-grabbing ${
         isDragging ? "opacity-70 ring-[#2f6f6a]" : ""
       }`}
     >
@@ -58,7 +59,7 @@ function Column({
     <div
       ref={setNodeRef}
       className={`min-h-[280px] rounded-xl p-3 ${
-        isOver ? "bg-[#2f6f6a]/10" : "bg-slate-100/80"
+        isOver ? "bg-[#2f6f6a]/10" : "bg-muted"
       }`}
     >
       <h3 className="mb-3 font-[family-name:var(--font-display)] text-lg text-slate-800">
@@ -145,41 +146,37 @@ export function Roadmap() {
   }
 
   return (
-    <section id="roadmap" className="scroll-mt-24">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="font-[family-name:var(--font-display)] text-2xl text-slate-900">
-            Roadmap
-          </h2>
-          <p className="text-sm text-slate-500">
-            Now / Next / Later — drag to override Claude placement
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              download("roadmap.csv", roadmapToCsv(exportRows()), "text/csv")
-            }
-          >
-            Export CSV
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              download(
-                "roadmap.md",
-                roadmapToMarkdown(exportRows()),
-                "text/markdown"
-              )
-            }
-          >
-            Export Markdown
-          </Button>
-        </div>
-      </div>
+    <section>
+      <SectionHeader
+        title="Roadmap"
+        subtitle="Now / Next / Later — drag to override Claude placement"
+        action={
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                download("roadmap.csv", roadmapToCsv(exportRows()), "text/csv")
+              }
+            >
+              Export CSV
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                download(
+                  "roadmap.md",
+                  roadmapToMarkdown(exportRows()),
+                  "text/markdown"
+                )
+              }
+            >
+              Export Markdown
+            </Button>
+          </div>
+        }
+      />
 
       <DndContext sensors={sensors} onDragEnd={(e) => void onDragEnd(e)}>
         <div className={`grid gap-3 lg:grid-cols-3 ${busy ? "opacity-70" : ""}`}>
@@ -201,7 +198,7 @@ export function Roadmap() {
                       <Badge variant="outline">impact {i.feature.impact_score}</Badge>
                       <Badge variant="outline">{i.feature.effort_estimate}</Badge>
                       {i.manually_overridden && (
-                        <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">
+                        <Badge className="bg-[#c45c26]/15 text-[#c45c26] hover:bg-[#c45c26]/15">
                           overridden
                         </Badge>
                       )}

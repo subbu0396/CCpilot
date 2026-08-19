@@ -5,6 +5,7 @@ import { FilterProvider } from "@/lib/filters/context";
 import { SidebarNav } from "@/components/dashboard/SidebarNav";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { DashboardProvider } from "@/components/dashboard/DashboardProvider";
+import { ViewProvider } from "@/components/dashboard/ViewProvider";
 
 const display = Fraunces({
   subsets: ["latin"],
@@ -34,13 +35,15 @@ export default function RootLayout({
       <body className="min-h-screen bg-[#f7f5f1] font-sans text-slate-900 antialiased">
         <FilterProvider>
           <DashboardProvider>
-            <div className="flex min-h-screen">
-              <SidebarNav />
-              <div className="flex min-w-0 flex-1 flex-col">
-                <FilterBar />
-                <main className="flex-1">{children}</main>
+            <ViewProvider>
+              <div className="flex min-h-screen">
+                <SidebarNav />
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <FilterBar />
+                  <main className="flex-1">{children}</main>
+                </div>
               </div>
-            </div>
+            </ViewProvider>
           </DashboardProvider>
         </FilterProvider>
       </body>

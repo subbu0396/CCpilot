@@ -8,10 +8,24 @@ import { Features } from "@/components/dashboard/Features";
 import { Roadmap } from "@/components/dashboard/Roadmap";
 import { Admin } from "@/components/dashboard/Admin";
 import { useDashboard } from "@/components/dashboard/DashboardProvider";
+import { useView } from "@/components/dashboard/ViewProvider";
+import { MobileViewSelect } from "@/components/dashboard/MobileViewSelect";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const SECTIONS = {
+  suggestions: AISuggestions,
+  "pain-points": PainPoints,
+  churn: ChurnRisk,
+  clusters: Clusters,
+  features: Features,
+  roadmap: Roadmap,
+  admin: Admin,
+} as const;
 
 export default function HomePage() {
   const { loading, error, data } = useDashboard();
+  const { view } = useView();
+  const ActiveSection = SECTIONS[view];
 
   if (loading && !data) {
     return (
@@ -44,7 +58,8 @@ export default function HomePage() {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(ellipse_at_top,_rgba(47,111,106,0.12),_transparent_60%)]"
       />
-      <div className="relative mx-auto max-w-7xl space-y-16 px-4 py-8 lg:px-8">
+      <MobileViewSelect />
+      <div className="relative mx-auto max-w-7xl space-y-8 px-4 py-8 lg:px-8">
         <header>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2f6f6a]">
             Customer Intelligence Copilot
@@ -63,13 +78,7 @@ export default function HomePage() {
           </p>
         </header>
 
-        <AISuggestions />
-        <PainPoints />
-        <ChurnRisk />
-        <Clusters />
-        <Features />
-        <Roadmap />
-        <Admin />
+        <ActiveSection />
       </div>
     </div>
   );

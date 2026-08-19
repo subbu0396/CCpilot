@@ -29,10 +29,13 @@
     --border: #e2e8f0;
     --input: #e2e8f0;
     --ring: #2f6f6a;
+    /* Chart/data-viz palette — brand teal, attention terracotta, then
+       neutrals. Navy (--primary) and amber are structural/dev-mode chrome
+       only and are intentionally excluded from data viz. */
     --chart-1: #2f6f6a;
     --chart-2: #c45c26;
-    --chart-3: #1a2332;
-    --chart-4: #d4a017;
+    --chart-3: #94a3b8;
+    --chart-4: #cbd5e1;
     --chart-5: #64748b;
     --radius: 0.625rem;
   }

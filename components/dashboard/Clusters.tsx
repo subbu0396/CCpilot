@@ -14,8 +14,10 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import type { Cluster } from "@/lib/supabase/types";
+import { SectionHeader } from "./shared/SectionHeader";
+import { SEMANTIC } from "@/lib/dashboard/theme";
 
-const SOURCE_COLORS = ["#2f6f6a", "#c45c26", "#1a2332"];
+const SOURCE_COLORS = [SEMANTIC.brand, SEMANTIC.attention, SEMANTIC.neutral];
 
 export function Clusters() {
   const { data } = useDashboard();
@@ -72,13 +74,11 @@ export function Clusters() {
   const activeCard = cards.find((c) => c.cluster.id === active?.id);
 
   return (
-    <section id="clusters" className="scroll-mt-24">
-      <h2 className="font-[family-name:var(--font-display)] text-2xl text-slate-900">
-        Clusters
-      </h2>
-      <p className="mb-4 text-sm text-slate-500">
-        Theme groups from embedded pain-point summaries (k-means)
-      </p>
+    <section>
+      <SectionHeader
+        title="Clusters"
+        subtitle="Theme groups from embedded pain-point summaries (k-means)"
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {cards.map(({ cluster, count, mix, topArea }) => {
@@ -90,7 +90,7 @@ export function Clusters() {
               key={cluster.id}
               type="button"
               onClick={() => setActive(cluster)}
-              className="rounded-xl bg-white p-4 text-left shadow-sm ring-1 ring-slate-200/80 transition hover:ring-[#2f6f6a]/50"
+              className="rounded-xl bg-card p-4 text-left ring-1 ring-foreground/10 transition hover:ring-[#2f6f6a]/50"
             >
               <div className="flex items-start justify-between gap-2">
                 <h3 className="font-semibold text-slate-900">{cluster.cluster_label}</h3>
@@ -137,7 +137,7 @@ export function Clusters() {
                 </p>
                 <ul className="space-y-2">
                   {activeCard.quotes.map((q, i) => (
-                    <li key={i} className="rounded-md bg-slate-50 p-3 text-sm text-slate-700">
+                    <li key={i} className="rounded-md bg-muted p-3 text-sm text-slate-700">
                       “{q}”
                     </li>
                   ))}
