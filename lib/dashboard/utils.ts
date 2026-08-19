@@ -48,7 +48,6 @@ export function sourceMix(
 ): Record<FeedbackSource, number> {
   const mix: Record<FeedbackSource, number> = {
     playstore: 0,
-    g2: 0,
     ticket: 0,
   };
   for (const i of items) mix[i.source] += 1;

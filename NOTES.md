@@ -3,6 +3,45 @@
 Running log of what changed and why, newest first. For full detail see the
 commit each entry references.
 
+## 2026-08-19 — Remove G2 entirely; dynamic per-section headline; sign-in visibility
+
+G2 required a Partner API account the user doesn't have, so removed it
+completely rather than just the live-sync feature:
+- Deleted `lib/ingestion/g2-csv.ts`, the whole `/mcp-server` package, the 3
+  G2 sample CSVs, the "Sync G2" button/handler, and the `sync_g2` action in
+  `app/api/ingest/route.ts`.
+- Dropped `g2` from `FeedbackSourceSchema`, `FeedbackSource` type, and the
+  `SOURCES` filter array — G2 is no longer a selectable/valid source
+  anywhere in the app.
+- Purged the 225 existing G2 rows from `feedback_items` in Supabase
+  (cascades to `pain_points`/`churn_signals`/`feedback_clusters` via FK).
+  Re-ran cluster → features → roadmap so derived data reflects only
+  Play Store + Tickets.
+- **Found and fixed a real pre-existing bug while re-running the
+  pipeline**: `loadFeatures()` in `lib/pipeline/roadmap.ts` didn't filter
+  by the latest cluster run in Supabase mode (unlike local mode, which
+  did) — features from every past cluster run accumulate in the table by
+  design, so roadmap generation was silently feeding Claude a growing pile
+  of stale features from superseded runs. This surfaced as a real 500
+  (`duplicate key value violates unique constraint
+  "roadmap_feature_id_run_id_key"`) once two different-run features
+  happened to share an identical `feature_name`. Fixed by scoping the
+  Supabase-mode query to the latest cluster run's `cluster_id`s, matching
+  the pattern `lib/pipeline/features.ts`/`lib/store/dashboard-data.ts`
+  already used correctly.
+- Removed `G2_API_KEY`/`G2_PRODUCT_ID` from `.env.local`,
+  `.env.local.example`, and all three Vercel environments.
+- Local/prod share one Supabase project, so the data purge applied to the
+  live site immediately — no separate prod migration needed.
+
+Also, per feedback on the dashboard redesign:
+- The top "CCPilot" header's subtitle is now dynamic per active view
+  (`VIEW_HEADLINES` in `app/page.tsx`) instead of one static sentence that
+  never changed regardless of which section was open.
+- The sidebar's "Sign in" link was a barely-visible 10px text link —
+  changed to a full-width solid button matching the rest of the sidebar's
+  button sizing.
+
 ## 2026-08-19 — Replace shared ADMIN_TOKEN with real Supabase Auth login (`ca4a94f`)
 
 The static `ADMIN_TOKEN` worked but was annoying in practice — a random hex

@@ -6,7 +6,7 @@ create extension if not exists "uuid-ossp";
 
 -- ─── Shared feedback ingest ───────────────────────────────────────────────────
 
-create type feedback_source as enum ('playstore', 'g2', 'ticket');
+create type feedback_source as enum ('playstore', 'ticket');
 
 create table if not exists feedback_items (
   id uuid primary key default gen_random_uuid(),

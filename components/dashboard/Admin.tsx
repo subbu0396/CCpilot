@@ -79,7 +79,7 @@ export function Admin() {
     <section>
       <SectionHeader
         title="Admin / Pipeline"
-        subtitle="Independently re-runnable stages — ingest uploads and G2/Zendesk sync live in the sidebar"
+        subtitle="Independently re-runnable stages — ingest uploads and Zendesk sync live in the sidebar"
       />
 
       <Card className="mb-4">

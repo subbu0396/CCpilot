@@ -17,7 +17,7 @@ import type { Cluster } from "@/lib/supabase/types";
 import { SectionHeader } from "./shared/SectionHeader";
 import { SEMANTIC } from "@/lib/dashboard/theme";
 
-const SOURCE_COLORS = [SEMANTIC.brand, SEMANTIC.attention, SEMANTIC.neutral];
+const SOURCE_COLORS = [SEMANTIC.brand, SEMANTIC.attention];
 
 export function Clusters() {
   const { data } = useDashboard();
@@ -42,7 +42,7 @@ export function Clusters() {
           .map((m) => m.feedback_item_id)
           .filter((id) => filteredIds.has(id));
         const members = data.feedback.filter((f) => memberIds.includes(f.id));
-        const mix = { playstore: 0, g2: 0, ticket: 0 };
+        const mix = { playstore: 0, ticket: 0 };
         for (const m of members) mix[m.source] += 1;
         const areas = new Map<string, number>();
         for (const id of memberIds) {

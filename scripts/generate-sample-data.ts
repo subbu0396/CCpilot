@@ -1,6 +1,6 @@
 /**
- * Generates 9 sample CSV files (~75 rows each = 675 total) for
- * Flowdesk / Trackr / NovaPulse across playstore, g2, and tickets.
+ * Generates 6 sample CSV files (~75 rows each = 450 total) for
+ * Flowdesk / Trackr / NovaPulse across playstore and tickets.
  *
  * Run: npx tsx scripts/generate-sample-data.ts
  */
@@ -200,46 +200,6 @@ function writePlayStore(company: Company) {
   );
 }
 
-function writeG2(company: Company) {
-  // rating stored as /10 to exercise the /10 → /5 conversion
-  const lines = [
-    row([
-      "id",
-      "title",
-      "body",
-      "rating",
-      "submitted_at",
-      "reviewer_title",
-      "product_name",
-    ]),
-  ];
-  const roles = [
-    "Product Manager",
-    "Engineering Lead",
-    "Customer Success",
-    "VP Operations",
-    "Analyst",
-  ];
-  for (let i = 1; i <= ROWS_PER_FILE; i++) {
-    const kind = severityBucket(i + 3);
-    const { title, body } = buildText(company, kind, i + 3);
-    const stars = ratingFor(kind, i);
-    const rating10 = stars * 2;
-    lines.push(
-      row([
-        `g2-${company.slice(0, 3).toLowerCase()}-${pad(i)}`,
-        title,
-        body,
-        rating10,
-        daysAgo(i + 5).toISOString(),
-        pick(roles, i),
-        company,
-      ])
-    );
-  }
-  writeFileSync(join(OUT, `${company.toLowerCase()}_g2.csv`), lines.join("\n") + "\n");
-}
-
 function writeTickets(company: Company) {
   // Zendesk-style for Flowdesk & Trackr; Freshdesk-style for NovaPulse
   const useFreshdesk = company === "NovaPulse";
@@ -327,8 +287,7 @@ function writeTickets(company: Company) {
 mkdirSync(OUT, { recursive: true });
 (["Flowdesk", "Trackr", "NovaPulse"] as Company[]).forEach((c) => {
   writePlayStore(c);
-  writeG2(c);
   writeTickets(c);
   console.log(`Wrote sample CSVs for ${c}`);
 });
-console.log(`Done — ${3 * 3 * ROWS_PER_FILE} rows across 9 files in ${OUT}`);
+console.log(`Done — ${3 * 2 * ROWS_PER_FILE} rows across 6 files in ${OUT}`);

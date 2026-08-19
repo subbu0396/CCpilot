@@ -1,4 +1,4 @@
-export type FeedbackSource = "playstore" | "g2" | "ticket";
+export type FeedbackSource = "playstore" | "ticket";
 export type Sentiment = "positive" | "neutral" | "negative";
 export type ChurnRisk = "none" | "low" | "medium" | "high";
 export type SignalType =

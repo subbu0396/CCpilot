@@ -10,7 +10,7 @@ import React, {
 import type { FeedbackSource } from "@/lib/supabase/types";
 
 export const COMPANIES = ["Flowdesk", "Trackr", "NovaPulse"] as const;
-export const SOURCES: FeedbackSource[] = ["playstore", "g2", "ticket"];
+export const SOURCES: FeedbackSource[] = ["playstore", "ticket"];
 
 export interface FilterState {
   companies: string[];

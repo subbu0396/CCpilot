@@ -86,25 +86,22 @@ export function SidebarNav() {
           <div className="mt-2 px-2">
             {email ? (
               <div className="flex items-center justify-between gap-2">
-                <p className="truncate text-[10px] text-slate-500" title={email}>
+                <p className="truncate text-xs text-slate-400" title={email}>
                   {email}
                 </p>
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-6 px-1.5 text-[10px] text-slate-400 hover:text-white"
+                  className="h-6 px-1.5 text-xs text-slate-300 hover:text-white"
                   onClick={() => void signOut()}
                 >
                   Sign out
                 </Button>
               </div>
             ) : (
-              <a
-                href="/login"
-                className="text-[10px] text-slate-400 underline-offset-2 hover:text-white hover:underline"
-              >
-                Sign in
-              </a>
+              <Button asChild size="sm" variant="secondary" className="w-full text-sm">
+                <a href="/login">Sign in</a>
+              </Button>
             )}
           </div>
           <p className="mt-2 px-2 text-[10px] text-slate-500">Single-page copilot</p>

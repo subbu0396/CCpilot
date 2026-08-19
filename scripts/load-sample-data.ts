@@ -10,7 +10,6 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { parsePlayStoreCsv } from "../lib/ingestion/playstore";
 import { parseTicketsCsv } from "../lib/ingestion/tickets";
-import { parseG2Csv } from "../lib/ingestion/g2-csv";
 import { validateFeedback } from "../lib/ingestion/upsert";
 import { saveFeedbackItems, listFeedbackItems } from "../lib/store/feedback";
 import { isLocalMode } from "../lib/store/local-db";
@@ -44,8 +43,6 @@ async function main() {
 
     if (file.includes("playstore")) {
       rows = parsePlayStoreCsv(text, company);
-    } else if (file.includes("g2")) {
-      rows = parseG2Csv(text, company);
     } else if (file.includes("tickets")) {
       rows = parseTicketsCsv(text, company);
     } else {
@@ -85,9 +82,9 @@ async function main() {
   Object.entries(byCompanySource)
     .sort()
     .forEach(([k, v]) => console.log(`  ${k}: ${v}`));
-  console.log(`\nTOTAL normalized: ${valid.length} (expected 675)`);
-  if (stored.length !== 675) {
-    console.warn(`WARNING: expected 675 stored rows, got ${stored.length}`);
+  console.log(`\nTOTAL normalized: ${valid.length} (expected 450)`);
+  if (stored.length !== 450) {
+    console.warn(`WARNING: expected 450 stored rows, got ${stored.length}`);
     process.exit(1);
   }
 }

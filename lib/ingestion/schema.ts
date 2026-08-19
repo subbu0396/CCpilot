@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const FeedbackSourceSchema = z.enum(["playstore", "g2", "ticket"]);
+export const FeedbackSourceSchema = z.enum(["playstore", "ticket"]);
 
 export const NormalizedFeedbackSchema = z.object({
   id: z.string().uuid().optional(),

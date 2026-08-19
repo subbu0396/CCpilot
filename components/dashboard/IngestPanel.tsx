@@ -36,25 +36,6 @@ export function IngestPanel() {
     }
   }
 
-  async function syncG2() {
-    setBusy(true);
-    setStatus("Syncing G2…");
-    try {
-      const res = await adminFetch("/api/ingest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "sync_g2" }),
-      });
-      const json = await res.json();
-      setStatus(json.message || "G2 sync done");
-      await refresh();
-    } catch (err) {
-      setStatus(err instanceof Error ? err.message : String(err));
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function syncZendesk() {
     setBusy(true);
     setStatus("Syncing Zendesk…");
@@ -100,20 +81,11 @@ export function IngestPanel() {
             className="mt-1 h-8 bg-white text-[11px] file:text-[11px]"
           />
         </div>
-        <div className="flex gap-1.5 pt-1">
+        <div className="pt-1">
           <Button
             size="sm"
             variant="secondary"
-            className="flex-1 px-1.5 text-[11px]"
-            disabled={busy}
-            onClick={() => void syncG2()}
-          >
-            Sync G2
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            className="flex-1 px-1.5 text-[11px]"
+            className="w-full px-1.5 text-[11px]"
             disabled={busy}
             onClick={() => void syncZendesk()}
           >

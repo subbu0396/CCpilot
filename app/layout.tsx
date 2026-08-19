@@ -22,7 +22,7 @@ const sans = Source_Sans_3({
 export const metadata: Metadata = {
   title: "CCPilot — Customer Intelligence Copilot",
   description:
-    "Unified feedback intelligence across Play Store, G2, and support tickets",
+    "Unified feedback intelligence across Play Store and support tickets",
 };
 
 export default function RootLayout({

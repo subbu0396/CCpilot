@@ -56,7 +56,7 @@ export function FilterBar() {
                   checked={filters.sources.includes(s)}
                   onCheckedChange={() => toggleSource(s)}
                 />
-                {s === "playstore" ? "Play Store" : s === "g2" ? "G2" : "Tickets"}
+                {s === "playstore" ? "Play Store" : "Tickets"}
               </label>
             ))}
           </div>

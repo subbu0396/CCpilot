@@ -95,9 +95,21 @@ async function loadFeatures(): Promise<Feature[]> {
     return db.features.filter((f) => clusterIds.has(f.cluster_id));
   }
   const supabase = createServiceClient();
+  const { data: clusterRows, error: clusterError } = await supabase
+    .from("clusters")
+    .select("id, run_id")
+    .order("created_at", { ascending: false });
+  if (clusterError) throw new Error(clusterError.message);
+  const clusters = (clusterRows ?? []) as { id: string; run_id: string }[];
+  if (!clusters.length) return [];
+  const latestRun = clusters[0].run_id;
+  const clusterIds = new Set(
+    clusters.filter((c) => c.run_id === latestRun).map((c) => c.id)
+  );
+
   const { data, error } = await supabase.from("features").select("*");
   if (error) throw new Error(error.message);
-  return (data ?? []) as Feature[];
+  return ((data ?? []) as Feature[]).filter((f) => clusterIds.has(f.cluster_id));
 }
 
 export async function runRoadmap(): Promise<{

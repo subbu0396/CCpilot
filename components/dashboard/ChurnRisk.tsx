@@ -78,7 +78,7 @@ export function ChurnRisk() {
     <section>
       <SectionHeader
         title="Churn Risk"
-        subtitle="Weighted signals — tickets 2×, low ratings 1.5×, G2 1×"
+        subtitle="Weighted signals — tickets 2×, low ratings 1.5×"
       />
 
       <div className="mb-4">

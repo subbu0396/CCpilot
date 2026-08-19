@@ -22,6 +22,23 @@ const SECTIONS = {
   admin: Admin,
 } as const;
 
+const VIEW_HEADLINES: Record<keyof typeof SECTIONS, string> = {
+  suggestions:
+    "AI-ranked actions across pain points, churn, and roadmap — prioritized for the current filters.",
+  "pain-points":
+    "Severity, sentiment, and product area extracted from every piece of filtered feedback.",
+  churn:
+    "Weighted churn-risk signals — which customers are showing signs of leaving, and why.",
+  clusters:
+    "Feedback grouped into themes by embedding similarity, across companies and sources.",
+  features:
+    "Proposed features scored by impact vs. effort, generated from the clustered themes.",
+  roadmap:
+    "Now / Next / Later prioritization by impact-to-effort ratio — drag to override.",
+  admin:
+    "Pipeline status, re-run controls, and ingest health for the underlying data.",
+};
+
 export default function HomePage() {
   const { loading, error, data } = useDashboard();
   const { view } = useView();
@@ -68,8 +85,7 @@ export default function HomePage() {
             CCPilot
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-slate-600 md:text-base">
-            One dashboard for Play Store, G2, and support feedback — pain points,
-            churn, clusters, features, and roadmap.
+            {VIEW_HEADLINES[view]}
             {data?.mode === "local" && (
               <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[11px] text-amber-800">
                 local store · {data.feedback.length} items

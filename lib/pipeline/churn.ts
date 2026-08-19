@@ -26,11 +26,10 @@ Return ONLY valid JSON:
 
 type ChurnOut = z.infer<typeof ChurnOutputSchema>;
 
-/** Source weighting: tickets 2x, low ratings (1–2) 1.5x, G2 1x, playstore 1x */
+/** Source weighting: tickets 2x, low ratings (1–2) 1.5x, playstore 1x */
 export function sourceWeight(item: FeedbackItem): number {
   let w = 1;
   if (item.source === "ticket") w *= 2;
-  if (item.source === "g2") w *= 1;
   if (item.rating !== null && item.rating <= 2) w *= 1.5;
   return w;
 }
