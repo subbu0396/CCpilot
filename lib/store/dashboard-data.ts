@@ -9,12 +9,14 @@ import type {
   RoadmapItem,
   PipelineJob,
   AISuggestion,
+  CoreAnalysis,
 } from "@/lib/supabase/types";
 
 export interface DashboardBundle {
   feedback: FeedbackItem[];
   painPoints: PainPoint[];
   churnSignals: ChurnSignal[];
+  coreAnalysis: CoreAnalysis[];
   clusters: Cluster[];
   feedbackClusters: {
     feedback_item_id: string;
@@ -52,6 +54,7 @@ export async function loadDashboardBundle(): Promise<DashboardBundle> {
       feedback: db.feedback_items,
       painPoints: db.pain_points,
       churnSignals: db.churn_signals,
+      coreAnalysis: db.core_analysis,
       clusters,
       feedbackClusters,
       features,
@@ -70,6 +73,7 @@ export async function loadDashboardBundle(): Promise<DashboardBundle> {
     feedback,
     painPoints,
     churnSignals,
+    coreAnalysis,
     clustersRes,
     features,
     roadmap,
@@ -79,6 +83,7 @@ export async function loadDashboardBundle(): Promise<DashboardBundle> {
     supabase.from("feedback_items").select("*"),
     supabase.from("pain_points").select("*"),
     supabase.from("churn_signals").select("*"),
+    supabase.from("core_analysis").select("*").order("created_at", { ascending: false }),
     supabase.from("clusters").select("*").order("created_at", { ascending: false }),
     supabase.from("features").select("*"),
     supabase.from("roadmap").select("*").order("created_at", { ascending: false }),
@@ -111,6 +116,7 @@ export async function loadDashboardBundle(): Promise<DashboardBundle> {
     feedback: (feedback.data ?? []) as FeedbackItem[],
     painPoints: (painPoints.data ?? []) as PainPoint[],
     churnSignals: (churnSignals.data ?? []) as ChurnSignal[],
+    coreAnalysis: (coreAnalysis.data ?? []) as CoreAnalysis[],
     clusters,
     feedbackClusters,
     features: (features.data ?? []) as Feature[],

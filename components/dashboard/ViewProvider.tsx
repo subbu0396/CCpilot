@@ -6,6 +6,7 @@ export const VIEWS = [
   { id: "suggestions", label: "AI Suggestions" },
   { id: "pain-points", label: "Pain Points" },
   { id: "churn", label: "Churn Risk" },
+  { id: "live-analysis", label: "Live Analysis" },
   { id: "clusters", label: "Clusters" },
   { id: "features", label: "Features" },
   { id: "roadmap", label: "Roadmap" },

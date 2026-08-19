@@ -3,6 +3,7 @@
 import { AISuggestions } from "@/components/dashboard/AISuggestions";
 import { PainPoints } from "@/components/dashboard/PainPoints";
 import { ChurnRisk } from "@/components/dashboard/ChurnRisk";
+import { LiveAnalysis } from "@/components/dashboard/LiveAnalysis";
 import { Clusters } from "@/components/dashboard/Clusters";
 import { Features } from "@/components/dashboard/Features";
 import { Roadmap } from "@/components/dashboard/Roadmap";
@@ -16,6 +17,7 @@ const SECTIONS = {
   suggestions: AISuggestions,
   "pain-points": PainPoints,
   churn: ChurnRisk,
+  "live-analysis": LiveAnalysis,
   clusters: Clusters,
   features: Features,
   roadmap: Roadmap,
@@ -29,6 +31,8 @@ const VIEW_HEADLINES: Record<keyof typeof SECTIONS, string> = {
     "Severity, sentiment, and product area extracted from every piece of filtered feedback.",
   churn:
     "Weighted churn-risk signals — which customers are showing signs of leaving, and why.",
+  "live-analysis":
+    "Real-time sentiment, churn, and category analysis on every Zendesk ticket and comment as it arrives.",
   clusters:
     "Feedback grouped into themes by embedding similarity, across companies and sources.",
   features:
