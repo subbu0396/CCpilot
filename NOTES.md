@@ -3,6 +3,30 @@
 Running log of what changed and why, newest first. For full detail see the
 commit each entry references.
 
+## 2026-08-19 — Sidebar ingest panel + fix broken Tailwind v4 `data-*` variants (`9b3287a`, `ce92ede`)
+
+Follow-up bug reports on the redesign:
+- Cards had almost no padding — `card.tsx` (and `select.tsx`/
+  `dropdown-menu.tsx`) used Tailwind v4-only syntax (`px-(--card-spacing)`,
+  `[--card-spacing:--spacing(4)]`) that Tailwind v3.4.1 (what this project
+  actually runs) doesn't parse, so the utilities silently produced no CSS.
+  Fixed by switching to v3-valid `var()` bracket syntax.
+- The severity range slider showed as "2 floating radio buttons" — same
+  root cause, one level deeper: `data-horizontal:`/`data-vertical:`/
+  `data-checked:`/`data-disabled:`/`data-open:`/`data-closed:` are bare
+  Tailwind v4 variant shorthands with no v3 equivalent; v3 needs the
+  bracket form (`data-[orientation=horizontal]:`, `data-[state=checked]:`,
+  etc.). This silently broke Slider's track/range fill (only the thumbs
+  rendered), Checkbox's checked-state fill, Separator's height/width, and
+  Sheet/Select's open/closed transition classes. Fixed all of them —
+  `tabs.tsx`/`scroll-area.tsx`/`dialog.tsx`/`dropdown-menu.tsx`'s remaining
+  instances were left alone since none of those components are used
+  anywhere in `components/dashboard/`.
+- CSV upload and G2/Zendesk sync were buried inside the Admin view, only
+  reachable after switching to it. Moved to a new always-visible
+  `IngestPanel` in the sidebar; Admin now holds only cluster controls +
+  the pipeline stage table.
+
 ## 2026-08-19 — Consolidate dashboard into a single-view, clean minimal layout (`16d1500`)
 
 The dashboard read as dense/scattered: all 7 sections (AI Suggestions, Pain

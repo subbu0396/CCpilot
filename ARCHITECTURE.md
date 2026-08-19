@@ -97,6 +97,10 @@ Single-page app (`/`) with a global filter context (company, source, date, sever
 
 Shared presentational components live in `components/dashboard/shared/` (`SectionHeader`, `StatGrid`) and every section is built on the shadcn `Card`/`Table` primitives (`components/ui/`) rather than ad hoc markup, so spacing/radius/shadow stay consistent. Chart colors are centralized in `lib/dashboard/theme.ts` (mirrors the `--chart-1..5` CSS vars in `app/globals.css`) with one semantic mapping: teal = brand/positive, terracotta = attention/medium, red = critical only, slate = neutral. Navy is reserved for sidebar chrome and never appears in data viz.
 
+CSV upload and G2/Zendesk sync (`IngestPanel`, `components/dashboard/IngestPanel.tsx`) live permanently in the sidebar rather than inside any switched view — they're operator actions that should stay reachable no matter what an analyst is currently looking at. Admin holds only cluster controls and the pipeline stage table.
+
+**Tailwind version note:** this project runs Tailwind v3.4.1. The installed shadcn `components/ui/` primitives were originally generated for Tailwind v4 and used v4-only syntax (`px-(--var)`, `data-open:`, `data-checked:`, etc.) that v3 silently fails to parse — no error, just missing CSS. Several of these were found and fixed (card, slider, checkbox, separator, sheet, select, dropdown-menu var-syntax). If a shadcn component looks unstyled or a state variant (hover/open/checked/disabled) doesn't visually apply, check for bare `data-x:`/`-(--var)` syntax first — the fix is the v3 bracket form (`data-[state=x]:`, `[var(--x)]`).
+
 ## Auth
 
 Single-admin, shared-secret model — no user accounts. Every **read** route (`GET /api/dashboard`, `GET /api/pipeline`, and the automatic on-load `POST /api/suggestions` with `force: false`) is public, so the dashboard works as a passive demo link for anyone. Every **mutating / spend-triggering** route requires an `x-admin-token` header matching `ADMIN_TOKEN`:
