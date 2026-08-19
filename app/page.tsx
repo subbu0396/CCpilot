@@ -10,7 +10,7 @@ import { Roadmap } from "@/components/dashboard/Roadmap";
 import { Admin } from "@/components/dashboard/Admin";
 import { useDashboard } from "@/components/dashboard/DashboardProvider";
 import { useView } from "@/components/dashboard/ViewProvider";
-import { MobileViewSelect } from "@/components/dashboard/MobileViewSelect";
+import { ViewCardNav } from "@/components/dashboard/ViewCardNav";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const SECTIONS = {
@@ -79,7 +79,6 @@ export default function HomePage() {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(ellipse_at_top,_rgba(47,111,106,0.12),_transparent_60%)]"
       />
-      <MobileViewSelect />
       <div className="relative mx-auto max-w-7xl space-y-8 px-4 py-8 lg:px-8">
         <header>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2f6f6a]">
@@ -97,6 +96,8 @@ export default function HomePage() {
             )}
           </p>
         </header>
+
+        <ViewCardNav headlines={VIEW_HEADLINES} />
 
         <ActiveSection />
       </div>

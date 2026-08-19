@@ -38,8 +38,8 @@ interface FilterContextValue {
 const defaultFilters: FilterState = {
   companies: [...COMPANIES],
   sources: [...SOURCES],
-  dateFrom: "2025-01-01",
-  dateTo: "2026-12-31",
+  dateFrom: "2000-01-01",
+  dateTo: "2100-01-01",
   severityMin: 1,
   severityMax: 5,
 };

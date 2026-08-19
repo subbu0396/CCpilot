@@ -1,7 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { DashboardBundle } from "@/lib/store/dashboard-data";
+import { useFilters } from "@/lib/filters/context";
 
 interface DashboardContextValue {
   data: DashboardBundle | null;
@@ -35,6 +36,15 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     void refresh();
   }, []);
+
+  const { registerCompanies } = useFilters();
+  const realCompanies = useMemo(
+    () => (data ? Array.from(new Set(data.feedback.map((f) => f.company))) : []),
+    [data]
+  );
+  useEffect(() => {
+    if (realCompanies.length) registerCompanies(realCompanies);
+  }, [realCompanies, registerCompanies]);
 
   return (
     <DashboardContext.Provider value={{ data, loading, error, refresh }}>

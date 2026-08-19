@@ -3,7 +3,6 @@ import { Fraunces, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 import { FilterProvider } from "@/lib/filters/context";
 import { SidebarNav } from "@/components/dashboard/SidebarNav";
-import { FilterBar } from "@/components/dashboard/FilterBar";
 import { DashboardProvider } from "@/components/dashboard/DashboardProvider";
 import { ViewProvider } from "@/components/dashboard/ViewProvider";
 
@@ -39,7 +38,6 @@ export default function RootLayout({
               <div className="flex min-h-screen">
                 <SidebarNav />
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <FilterBar />
                   <main className="flex-1">{children}</main>
                 </div>
               </div>

@@ -2,14 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { VIEWS, useView } from "./ViewProvider";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { IngestPanel } from "./IngestPanel";
 import { createAuthBrowserClient } from "@/lib/supabase/auth-browser";
-
-const MAIN_VIEWS = VIEWS.filter((v) => v.id !== "admin");
-const ADMIN_VIEW = VIEWS.find((v) => v.id === "admin")!;
 
 function useAuthEmail(): string | null {
   const [email, setEmail] = useState<string | null>(null);
@@ -27,7 +23,6 @@ function useAuthEmail(): string | null {
 }
 
 export function SidebarNav() {
-  const { view, setView } = useView();
   const router = useRouter();
   const email = useAuthEmail();
 
@@ -46,44 +41,14 @@ export function SidebarNav() {
           </p>
           <p className="mt-1 text-xs text-slate-400">Customer Intelligence</p>
         </div>
-        <nav className="flex flex-col gap-1">
-          {MAIN_VIEWS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              aria-current={view === item.id ? "page" : undefined}
-              onClick={() => setView(item.id)}
-              className={`rounded-md px-3 py-2 text-left text-sm transition ${
-                view === item.id
-                  ? "bg-white/10 text-white"
-                  : "text-slate-300 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
 
-        <div className="mt-6">
+        <div>
           <IngestPanel />
         </div>
 
         <div className="mt-auto pt-6">
           <Separator className="my-2 bg-white/10" />
-          <button
-            type="button"
-            aria-current={view === ADMIN_VIEW.id ? "page" : undefined}
-            onClick={() => setView(ADMIN_VIEW.id)}
-            className={`w-full rounded-md px-3 py-2 text-left text-xs transition ${
-              view === ADMIN_VIEW.id
-                ? "bg-white/10 text-white"
-                : "text-slate-400 hover:bg-white/10 hover:text-white"
-            }`}
-          >
-            {ADMIN_VIEW.label}
-          </button>
-
-          <div className="mt-2 px-2">
+          <div className="px-2">
             {email ? (
               <div className="flex items-center justify-between gap-2">
                 <p className="truncate text-xs text-slate-400" title={email}>
