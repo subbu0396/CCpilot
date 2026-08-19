@@ -3,6 +3,35 @@
 Running log of what changed and why, newest first. For full detail see the
 commit each entry references.
 
+## 2026-08-19 — Consolidate dashboard into a single-view, clean minimal layout (`16d1500`)
+
+The dashboard read as dense/scattered: all 7 sections (AI Suggestions, Pain
+Points, Churn Risk, Clusters, Features, Roadmap, Admin) stacked full-width
+in one long scroll, each hand-rolling near-identical but inconsistent
+card/table markup, with 5+ competing accent colors and no shared component
+— `components/ui/card.tsx`/`table.tsx`/`tabs.tsx` were installed but unused
+anywhere in `components/dashboard/`.
+
+- Sidebar is now a real view switcher (`ViewProvider`/`useView`) instead of
+  anchor links — one section renders at a time. Admin visually demoted
+  (separator + muted styling) since it's operator-only.
+- Added `MobileViewSelect` (shadcn `Select`) — the sidebar previously just
+  vanished below `lg` with zero nav fallback.
+- New `components/dashboard/shared/{SectionHeader,StatGrid}.tsx` replace
+  duplicated header/stat-tile markup across all 7 sections.
+- Every ad hoc card/table div migrated onto shadcn `Card`/`Table`.
+- One semantic color mapping applied everywhere via new
+  `lib/dashboard/theme.ts` + updated `globals.css` chart vars: teal=brand/
+  positive, terracotta=attention/medium, red=critical only, navy=sidebar
+  chrome only (removed from charts), slate=neutral. Cut a floating amber
+  accent and an untracked blue "Medium" priority color. 5 stray background
+  tones consolidated to page/card/one muted surface. Dropped ChurnRisk's
+  dead "vs prior period: —" placeholder.
+- Handler logic (filters, `adminFetch` calls, drag-and-drop, CSV export)
+  untouched — JSX/className/color only. Verified via headless Chromium
+  screenshots of all 7 views + mobile, zero console errors, filter
+  toggling/cluster drill-in/roadmap columns all still working.
+
 ## 2026-08-19 — Wire up live Zendesk ticket sync
 
 Added a real Zendesk connector (`lib/ingestion/zendesk-live.ts`), triggered

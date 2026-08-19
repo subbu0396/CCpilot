@@ -93,7 +93,9 @@ Otherwise the app uses `data/local-db.json` so you can demo without cloud creden
 
 ## Dashboard
 
-Single scrollable page (`/`) with sticky sidebar anchors and a global filter context (company, source, date, severity). Sections: AI Suggestions → Pain Points → Churn → Clusters → Features → Roadmap → Admin.
+Single-page app (`/`) with a global filter context (company, source, date, severity) that applies across every view. The left sidebar (`SidebarNav`) is a real client-side view switcher (`ViewProvider`/`useView`, `components/dashboard/ViewProvider.tsx`) — only one section renders at a time: AI Suggestions, Pain Points, Churn, Clusters, Features, Roadmap, or Admin (visually demoted below a separator — operator-only, not a peer analyst view). Below the `lg` breakpoint the sidebar is hidden and `MobileViewSelect` (a `Select` dropdown) takes over as the nav.
+
+Shared presentational components live in `components/dashboard/shared/` (`SectionHeader`, `StatGrid`) and every section is built on the shadcn `Card`/`Table` primitives (`components/ui/`) rather than ad hoc markup, so spacing/radius/shadow stay consistent. Chart colors are centralized in `lib/dashboard/theme.ts` (mirrors the `--chart-1..5` CSS vars in `app/globals.css`) with one semantic mapping: teal = brand/positive, terracotta = attention/medium, red = critical only, slate = neutral. Navy is reserved for sidebar chrome and never appears in data viz.
 
 ## Auth
 
