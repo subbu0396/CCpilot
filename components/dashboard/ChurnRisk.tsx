@@ -69,7 +69,7 @@ export function ChurnRisk() {
     () =>
       rows
         .filter((r) => r.churn?.churn_risk === "high")
-        .sort((a, b) => b.feedback.timestamp.localeCompare(a.feedback.timestamp))
+        .sort((a, b) => (b.churn?.weighted_score ?? 0) - (a.churn?.weighted_score ?? 0))
         .slice(0, 40),
     [rows]
   );
