@@ -36,10 +36,10 @@ export function SidebarNav() {
     <aside className="hidden w-56 shrink-0 border-r border-slate-200 bg-[#1a2332] text-[#f7f5f1] lg:block">
       <div className="sticky top-0 flex h-screen flex-col overflow-y-auto px-4 py-6">
         <div className="mb-6 px-2">
-          <p className="font-[family-name:var(--font-display)] text-xl tracking-tight">
+          <p className="font-[family-name:var(--font-display)] text-3xl tracking-tight">
             CCPilot
           </p>
-          <p className="mt-1 text-xs text-slate-400">Customer Intelligence</p>
+          <p className="mt-1 text-sm text-slate-400">Customer Intelligence</p>
         </div>
 
         <div>
