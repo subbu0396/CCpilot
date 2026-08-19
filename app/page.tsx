@@ -81,13 +81,17 @@ export default function HomePage() {
       />
       <div className="relative mx-auto max-w-7xl space-y-8 px-4 py-8 lg:px-8">
         <header>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2f6f6a]">
+          <h1 className="font-[family-name:var(--font-display)] text-4xl tracking-tight text-slate-900 md:text-6xl">
             Customer Intelligence Copilot
-          </p>
-          <h1 className="mt-2 font-[family-name:var(--font-display)] text-4xl tracking-tight text-slate-900 md:text-5xl">
-            CCPilot
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-600 md:text-base">
+          <p className="mt-3 max-w-2xl text-base text-slate-600 md:text-lg">
+            CCPilot unifies Play Store reviews and support tickets into one live view
+            of customer sentiment, churn risk, and product priorities. Every piece of
+            feedback is scored, clustered, and turned into a ranked action, so nothing
+            critical gets lost in the noise, from a comment landing in Zendesk to a
+            roadmap item shipping straight into Jira.
+          </p>
+          <p className="mt-2 max-w-2xl text-sm text-slate-500">
             {VIEW_HEADLINES[view]}
             {data?.mode === "local" && (
               <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[11px] text-amber-800">
