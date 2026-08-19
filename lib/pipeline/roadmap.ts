@@ -169,6 +169,8 @@ export async function runRoadmap(): Promise<{
           sort_order: order++,
           manually_overridden: false,
           run_id: runId,
+          jira_issue_key: null,
+          jira_issue_url: null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         });
@@ -187,6 +189,8 @@ export async function runRoadmap(): Promise<{
         sort_order: order++,
         manually_overridden: false,
         run_id: runId,
+        jira_issue_key: null,
+        jira_issue_url: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });

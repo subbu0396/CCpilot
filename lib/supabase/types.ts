@@ -84,6 +84,8 @@ export interface RoadmapItem {
   sort_order: number;
   manually_overridden: boolean;
   run_id: string;
+  jira_issue_key: string | null;
+  jira_issue_url: string | null;
   created_at?: string;
   updated_at?: string;
 }

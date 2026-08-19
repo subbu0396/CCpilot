@@ -95,6 +95,8 @@ export function Roadmap() {
       rationale: string;
       sort_order: number;
       manually_overridden: boolean;
+      jira_issue_key: string | null;
+      jira_issue_url: string | null;
       feature: { feature_name: string; impact_score: number; effort_estimate: string };
       clusterLabel: string;
     }>;
@@ -201,6 +203,18 @@ export function Roadmap() {
                         <Badge className="bg-[#c45c26]/15 text-[#c45c26] hover:bg-[#c45c26]/15">
                           overridden
                         </Badge>
+                      )}
+                      {i.jira_issue_key && (
+                        <a
+                          href={i.jira_issue_url ?? undefined}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Badge className="bg-[#2f6f6a]/15 text-[#2f6f6a] hover:bg-[#2f6f6a]/25">
+                            {i.jira_issue_key}
+                          </Badge>
+                        </a>
                       )}
                     </div>
                     <p className="mt-2 text-[10px] text-slate-400">{i.clusterLabel}</p>
