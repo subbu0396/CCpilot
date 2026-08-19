@@ -8,6 +8,7 @@ import { listJobs } from "@/lib/pipeline/jobs";
 import { requireAdminAuth } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 export const maxDuration = 300;
 
 export async function GET() {

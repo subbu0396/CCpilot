@@ -11,6 +11,7 @@ import type { AISuggestion } from "@/lib/supabase/types";
 import { requireAdminAuth } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 const SYSTEM = `You are a product strategist. Given filtered customer intelligence stats, propose 3–5 actionable suggestions.
 Return ONLY JSON:

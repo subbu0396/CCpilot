@@ -3,6 +3,44 @@
 Running log of what changed and why, newest first. For full detail see the
 commit each entry references.
 
+## 2026-08-19 — Fix Vercel Data Cache silently serving stale Supabase reads
+
+After the G2 purge (below), the live site kept returning the old,
+pre-purge dataset (688 rows incl. G2) no matter what — while every direct
+check against the database itself (raw REST curl, a plain Node script,
+even the app's own `createServiceClient()` run locally) consistently and
+correctly showed 463 rows with G2 gone. Spent a long time ruling out the
+obvious suspects before finding the real cause:
+- Confirmed `ccpilot.vercel.app` aliases to the actual latest deployment
+  (`vercel inspect`) — not a stale alias.
+- Confirmed `NEXT_PUBLIC_SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` on
+  Vercel Production byte-for-byte match `.env.local` (temporarily marked
+  non-sensitive to `vercel env pull` and diff them, then restored to
+  sensitive after) — not an env var mismatch.
+- Confirmed `vercel deploy --prod --force` (bypasses the Build Cache) and
+  a cache-busting query param made no difference — not the build cache,
+  not a CDN edge cache (`x-vercel-cache: MISS` the whole time).
+- Confirmed the response's own `mode: "supabase"` field, not `"local"` —
+  not accidentally falling back to the gitignored `data/local-db.json`
+  file some old local-mode testing had left on disk.
+
+The actual cause: **Vercel's Data Cache** — a fetch-result cache that
+persists *across deployments* and is separate from the Build Cache
+`--force` bypasses. `export const dynamic = "force-dynamic"` alone did
+not reliably stop it from caching the Supabase JS client's internal
+`fetch()` calls. Fixed by adding `export const fetchCache =
+"force-no-store"` alongside `dynamic = "force-dynamic"` in all 5
+`app/api/*/route.ts` files — the stronger, Next.js-documented directive
+that forces every fetch in the route (including ones made deep inside a
+third-party library) to bypass the Data Cache outright. Verified stable
+across multiple fresh requests after redeploying.
+
+**Lesson for next time a Vercel deployment looks "stuck" on old data**:
+`dynamic = "force-dynamic"` is not always sufficient on its own — add
+`fetchCache = "force-no-store"` too, especially for routes that call a
+third-party client library (Supabase, etc.) rather than `fetch()`
+directly.
+
 ## 2026-08-19 — Remove G2 entirely; dynamic per-section headline; sign-in visibility
 
 G2 required a Partner API account the user doesn't have, so removed it

@@ -7,6 +7,7 @@ import { requireAdminAuth } from "@/lib/auth/admin";
 import { fetchZendeskTickets, hasZendeskCreds } from "@/lib/ingestion/zendesk-live";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 export async function POST(req: NextRequest) {
   const authFail = await requireAdminAuth();

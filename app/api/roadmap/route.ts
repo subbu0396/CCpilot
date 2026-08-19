@@ -5,6 +5,7 @@ import type { RoadmapBucket } from "@/lib/supabase/types";
 import { requireAdminAuth } from "@/lib/auth/admin";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 export async function PATCH(req: NextRequest) {
   const authFail = await requireAdminAuth();
