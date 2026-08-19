@@ -1,6 +1,8 @@
 "use client";
 
-import { useFilters, COMPANIES, SOURCES } from "@/lib/filters/context";
+import { useEffect, useMemo } from "react";
+import { useFilters, SOURCES } from "@/lib/filters/context";
+import { useDashboard } from "./DashboardProvider";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -8,8 +10,26 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 
 export function FilterBar() {
-  const { filters, setCompanies, setSources, setDateRange, setSeverity, resetFilters } =
-    useFilters();
+  const {
+    filters,
+    knownCompanies,
+    setCompanies,
+    setSources,
+    setDateRange,
+    setSeverity,
+    resetFilters,
+    registerCompanies,
+  } = useFilters();
+  const { data } = useDashboard();
+
+  const realCompanies = useMemo(
+    () => (data ? Array.from(new Set(data.feedback.map((f) => f.company))) : []),
+    [data]
+  );
+
+  useEffect(() => {
+    if (realCompanies.length) registerCompanies(realCompanies);
+  }, [realCompanies, registerCompanies]);
 
   function toggleCompany(c: string) {
     const next = filters.companies.includes(c)
@@ -33,7 +53,7 @@ export function FilterBar() {
             Company
           </p>
           <div className="flex flex-wrap gap-3">
-            {COMPANIES.map((c) => (
+            {knownCompanies.map((c) => (
               <label key={c} className="flex items-center gap-1.5 text-sm text-slate-700">
                 <Checkbox
                   checked={filters.companies.includes(c)}

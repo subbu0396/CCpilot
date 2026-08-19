@@ -23,11 +23,15 @@ export interface FilterState {
 
 interface FilterContextValue {
   filters: FilterState;
+  /** Companies seen in the loaded data — drives the FilterBar checkbox list. Starts as the static demo list until real data registers itself. */
+  knownCompanies: string[];
   setCompanies: (c: string[]) => void;
   setSources: (s: FeedbackSource[]) => void;
   setDateRange: (from: string, to: string) => void;
   setSeverity: (min: number, max: number) => void;
   resetFilters: () => void;
+  /** Called by FilterBar once dashboard data loads, so companies outside the static demo list (e.g. a real Zendesk org name) aren't silently filtered out by default. */
+  registerCompanies: (companies: string[]) => void;
   filterKey: string;
 }
 
@@ -44,13 +48,33 @@ const FilterContext = createContext<FilterContextValue | null>(null);
 
 export function FilterProvider({ children }: { children: React.ReactNode }) {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
+  const [knownCompanies, setKnownCompanies] = useState<string[]>([...COMPANIES]);
+  const hasCustomizedCompanies = React.useRef(false);
 
   const setCompanies = useCallback((companies: string[]) => {
+    hasCustomizedCompanies.current = true;
     setFilters((f) => ({
       ...f,
-      companies: companies.length ? companies : [...COMPANIES],
+      companies: companies.length ? companies : knownCompanies,
     }));
+  }, [knownCompanies]);
+
+  const registerCompanies = useCallback((companies: string[]) => {
+    setKnownCompanies((prev) => {
+      const next = Array.from(new Set(companies)).sort();
+      if (prev.length === next.length && prev.every((c, i) => c === next[i])) {
+        return prev;
+      }
+      return next;
+    });
   }, []);
+
+  // Auto-select every real company the first time data loads, unless the
+  // user has already touched the company checkboxes themselves.
+  React.useEffect(() => {
+    if (hasCustomizedCompanies.current) return;
+    setFilters((f) => ({ ...f, companies: knownCompanies }));
+  }, [knownCompanies]);
 
   const setSources = useCallback((sources: FeedbackSource[]) => {
     setFilters((f) => ({
@@ -67,7 +91,10 @@ export function FilterProvider({ children }: { children: React.ReactNode }) {
     setFilters((f) => ({ ...f, severityMin, severityMax }));
   }, []);
 
-  const resetFilters = useCallback(() => setFilters(defaultFilters), []);
+  const resetFilters = useCallback(() => {
+    hasCustomizedCompanies.current = false;
+    setFilters({ ...defaultFilters, companies: knownCompanies });
+  }, [knownCompanies]);
 
   const filterKey = useMemo(
     () =>
@@ -85,20 +112,24 @@ export function FilterProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(
     () => ({
       filters,
+      knownCompanies,
       setCompanies,
       setSources,
       setDateRange,
       setSeverity,
       resetFilters,
+      registerCompanies,
       filterKey,
     }),
     [
       filters,
+      knownCompanies,
       setCompanies,
       setSources,
       setDateRange,
       setSeverity,
       resetFilters,
+      registerCompanies,
       filterKey,
     ]
   );
