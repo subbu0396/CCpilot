@@ -111,6 +111,28 @@ export interface AISuggestion {
   linked_feature: string;
 }
 
+export type CoreAnalysisCategory =
+  | "UI/UX"
+  | "PERFORMANCE"
+  | "BILLING"
+  | "FEATURE_REQUEST"
+  | "BUG"
+  | "OTHER";
+
+export interface CoreAnalysis {
+  id: string;
+  feedback_item_id: string;
+  sentiment: "POSITIVE" | "NEUTRAL" | "NEGATIVE";
+  churn_risk_score: number;
+  primary_pain_point: string;
+  category: CoreAnalysisCategory;
+  key_quotes: string[];
+  actionable_recommendation: string;
+  zendesk_priority_escalation: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -189,6 +211,11 @@ export interface Database {
           cluster_id: string;
           run_id: string;
         }>;
+      };
+      core_analysis: {
+        Row: CoreAnalysis;
+        Insert: Omit<CoreAnalysis, "id"> & { id?: string };
+        Update: Partial<CoreAnalysis>;
       };
     };
   };

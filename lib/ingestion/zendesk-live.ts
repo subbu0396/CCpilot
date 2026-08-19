@@ -25,7 +25,7 @@ interface CachedToken {
 
 let tokenCache: CachedToken | null = null;
 
-async function getAccessToken(subdomain: string): Promise<string> {
+export async function getAccessToken(subdomain: string): Promise<string> {
   if (tokenCache && tokenCache.expiresAt > Date.now() + 30_000) {
     return tokenCache.accessToken;
   }
@@ -40,7 +40,7 @@ async function getAccessToken(subdomain: string): Promise<string> {
       grant_type: "client_credentials",
       client_id: clientId,
       client_secret: clientSecret,
-      scope: "tickets:read",
+      scope: "tickets:read tickets:write",
     }),
   });
 

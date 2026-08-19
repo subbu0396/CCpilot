@@ -15,12 +15,14 @@ import type {
   RoadmapItem,
   PipelineJob,
   AISuggestion,
+  CoreAnalysis,
 } from "@/lib/supabase/types";
 
 export interface LocalDb {
   feedback_items: FeedbackItem[];
   pain_points: PainPoint[];
   churn_signals: ChurnSignal[];
+  core_analysis: CoreAnalysis[];
   clusters: Cluster[];
   feedback_clusters: {
     feedback_item_id: string;
@@ -48,6 +50,7 @@ function emptyDb(): LocalDb {
     feedback_items: [],
     pain_points: [],
     churn_signals: [],
+    core_analysis: [],
     clusters: [],
     feedback_clusters: [],
     features: [],

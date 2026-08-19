@@ -31,6 +31,9 @@ yarn-error.log*
 # local demo store
 /data
 
+# generated documents (document-generation skill)
+/docs/generated
+
 # vercel
 .vercel
 

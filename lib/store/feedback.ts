@@ -47,6 +47,31 @@ export async function saveFeedbackItems(
   return { ...result, mode: "supabase" };
 }
 
+export async function getFeedbackItemByExternalId(
+  source: string,
+  company: string,
+  externalId: string
+): Promise<FeedbackItem | null> {
+  if (isLocalMode()) {
+    const row = readDb().feedback_items.find(
+      (f) =>
+        f.source === source && f.company === company && f.external_id === externalId
+    );
+    return row ?? null;
+  }
+
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("feedback_items")
+    .select("*")
+    .eq("source", source)
+    .eq("company", company)
+    .eq("external_id", externalId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data as FeedbackItem | null) ?? null;
+}
+
 export async function listFeedbackItems(filters?: {
   companies?: string[];
   sources?: string[];

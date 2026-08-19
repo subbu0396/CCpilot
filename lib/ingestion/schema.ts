@@ -81,6 +81,23 @@ export const RoadmapOutputSchema = z.object({
   ),
 });
 
+export const CoreAnalysisOutputSchema = z.object({
+  sentiment: z.enum(["POSITIVE", "NEUTRAL", "NEGATIVE"]),
+  churn_risk_score: z.number().min(0).max(1),
+  primary_pain_point: z.string().min(1),
+  category: z.enum([
+    "UI/UX",
+    "PERFORMANCE",
+    "BILLING",
+    "FEATURE_REQUEST",
+    "BUG",
+    "OTHER",
+  ]),
+  key_quotes: z.array(z.string()),
+  actionable_recommendation: z.string().min(1),
+  zendesk_priority_escalation: z.boolean(),
+});
+
 export const AISuggestionSchema = z.object({
   suggestions: z
     .array(
