@@ -3,6 +3,189 @@
 Running log of what changed and why, newest first. For full detail see the
 commit each entry references.
 
+## 2026-08-20 — Dashboard polish: enlarge branding, top-10 caps, fix a sort (`098ea89`, `ba48078`, `41dbbbb`, `a58c571`, `6f31ead`)
+
+Follow-up aesthetic/UX pass after the redesign below:
+
+- Header: dropped the standalone "CCPilot" `h1` entirely and enlarged the
+  small eyebrow label ("Customer Intelligence Copilot") into the main
+  display heading, with a new multi-sentence description of what the
+  product actually does underneath (the per-view contextual line stays,
+  now as a third, smaller line).
+- Sidebar: bumped the "CCPilot" logo text from `text-xl` to `text-3xl` (and
+  its "Customer Intelligence" subtitle `text-xs` → `text-sm`) — it read as
+  too small relative to everything else once the filter bar/nav buttons
+  were removed and the sidebar got visually sparser.
+- Pain Points, Churn Risk, Features, and Live Analysis all capped their
+  list/table rendering to the top 10 (by severity, weighted churn score,
+  impact score, and churn risk score respectively) instead of showing up
+  to 40–100 rows. Each shows a small "Top 10 by …" label; Live Analysis
+  keeps its stat tiles (Analyzed/Escalated/etc.) computed off the *full*
+  filtered set, only the rendered list is sliced, so the summary numbers
+  don't misleadingly shrink to match the visible 10.
+- Fixed a real inconsistency found while doing the above: Churn Risk's
+  "High-risk items" list was sorting by ticket date, not risk — the only
+  one of the four not already sorted high-to-low by its severity-equivalent
+  metric. Switched to sort by `weighted_score` descending.
+
+## 2026-08-20 — Replace sidebar view-switcher and filter bar with a card nav (`2147f26`)
+
+Aesthetic redesign: drop the sticky company/source/date/severity filter bar
+(and its Reset button) entirely, and turn the sidebar's vertical
+view-switcher buttons into a persistent grid of cards in the main content
+area instead. Confirmed with the user first: cards are a permanent nav (not
+a one-time landing screen), Admin/Pipeline stays visually demoted, and
+sidebar keeps branding + Ingest/Zendesk sync + sign-in/out.
+
+- `useFilters()`/`applyFilters()` are read by 6 different files (`ChurnRisk`,
+  `PainPoints`, `LiveAnalysis`, `Clusters`, `AISuggestions` via
+  `filterKey`, and server-side `app/api/suggestions/route.ts`). Rather than
+  rip filtering out of all of them for what's really a UI-only ask, kept
+  the plumbing and made its default state permanently "everything": widened
+  `defaultFilters.dateFrom`/`dateTo` in `lib/filters/context.tsx` to
+  `2000-01-01`/`2100-01-01`, and moved the real-company
+  auto-registration effect (`registerCompanies` — see the filter-hiding bug
+  below) out of the now-deleted `FilterBar.tsx` into
+  `components/dashboard/DashboardProvider.tsx`, which is always mounted
+  regardless of whether any filter UI exists. Without that move, real
+  company names would've silently dropped out of view again with no way to
+  bring them back.
+- New `components/dashboard/ViewCardNav.tsx`: a responsive `Card` grid, one
+  per view, active one ringed in teal, Admin/Pipeline muted. Replaces both
+  the sidebar buttons and `MobileViewSelect` (deleted — the card grid
+  reflows at every breakpoint on its own, no separate mobile nav needed).
+- `SidebarNav.tsx` trimmed down to branding, `IngestPanel`, and the
+  sign-in/out block — nothing else.
+- Verified via headless Chrome screenshot before shipping: card nav renders
+  correctly with the active/muted states, sidebar is minimal, no filter bar
+  anywhere.
+
+## 2026-08-20 — Auto-create Jira issues when a roadmap item moves to Now (`9f70d93`)
+
+Roadmap suggestions never left CCPilot — engineers had no way to pick up a
+"Now" item without someone manually copying it into Jira. Dragging a card
+into **Now** now creates a real Jira issue automatically and links it back
+on the card.
+
+- New `lib/integrations/jira.ts` (`hasJiraCreds`, `createJiraIssue`) — same
+  server-to-server pattern as the Zendesk OAuth client: direct REST API v3
+  call (`POST /rest/api/3/issue`), Basic Auth via `email:apiToken` base64,
+  no third-party middleman (Zapier/Make were considered and explicitly
+  rejected in favor of this).
+- `app/api/roadmap/route.ts`'s `PATCH` handler calls it best-effort
+  (try/catch, logs and continues — never fails the bucket-move response)
+  whenever the new bucket is `"now"` and the item doesn't already have a
+  `jira_issue_key`, so re-dragging the same card doesn't create duplicates.
+  `supabase/migrations/003_roadmap_jira.sql` adds `jira_issue_key`/
+  `jira_issue_url` columns to `roadmap` to persist the link.
+- **Two real misconfigurations hit and fixed during setup, not code bugs**:
+  1. `JIRA_PROJECT_KEY` was initially set to the name of an **Atlassian
+     Home "initiative" page** (Projects hub — About/Updates/Learnings/Risks
+     tabs, no issue tracker), not an actual Jira Software project. Jira's
+     API error for this ("target project doesn't exist or you don't have
+     permission") is identical to a real permissions problem, so this took
+     a few rounds of screenshots to diagnose. The real project (with an
+     issue-tracking board) was found via the app-switcher → Jira → Spaces
+     list, key `KAN`.
+  2. `getAccessToken`'s OAuth scope in `zendesk-live.ts` was broadened from
+     `tickets:read` to `tickets:read tickets:write` (shared with the
+     Zendesk webhook's priority-escalation write-back, see below) —
+     unrelated to Jira but landed in the same work.
+- Verified end-to-end against the live Jira project: dragging a card into
+  Now created `KAN-1`, card showed the linked badge, confirmed in both
+  Jira and Supabase.
+
+## 2026-08-20 — Add Live Analysis dashboard view + fix real feedback silently hidden by the company filter (`c512158`, `81ecfb5`)
+
+- New `components/dashboard/LiveAnalysis.tsx` view surfacing
+  `core_analysis` (see the Core Analysis Agent entry below) joined to
+  `feedback_items`: sentiment badge, category, churn score (color-coded),
+  escalation flag, primary pain point, expandable key quotes and
+  recommendation. Sorted by churn risk descending. `lib/store/dashboard-data.ts`
+  and `DashboardBundle` extended with a `coreAnalysis` array.
+- **Found immediately after shipping**: triggered a real Zendesk comment,
+  `core_analysis` had the row, but Live Analysis showed empty. Root cause —
+  `lib/filters/context.tsx`'s default `companies` filter was a hardcoded
+  3-name demo list (`Flowdesk`/`Trackr`/`NovaPulse`). The real ticket's
+  Zendesk organization name (`"Asd"`, a test account) fell outside that
+  list and got silently filtered out **everywhere in the dashboard**, not
+  just Live Analysis — this bug predated Live Analysis and had just never
+  surfaced before because all prior real-data testing happened to use
+  demo-named companies. Fixed by having `FilterBar` (at the time) register
+  every real company name seen in loaded data via a new
+  `registerCompanies`/`knownCompanies` pair on the filter context, and
+  auto-selecting all of them unless the user has manually customized the
+  checkboxes. (This mechanism later moved into `DashboardProvider` when the
+  filter bar itself was removed — see above.)
+
+## 2026-08-20 — Add Zendesk webhook for the real-time Core Analysis Agent (`1828a0a`, `d53e81d`)
+
+Built a second, real-time ingestion path alongside the existing batch
+Zendesk sync: a webhook that runs a dedicated analysis agent on every new
+ticket/comment as it arrives, instead of waiting for someone to click
+"Sync Zendesk."
+
+- **The agent**: `lib/pipeline/core-analysis.ts` (`runCoreAnalysis`) — a
+  single-purpose Claude call (via the same `cachedJsonCompletion` the batch
+  pipeline uses) that returns strict JSON: `sentiment`, `churn_risk_score`
+  (0–1 float), `primary_pain_point`, `category`, `key_quotes`,
+  `actionable_recommendation`, `zendesk_priority_escalation` (true when
+  score ≥ 0.75 or a critical bug). Schema in
+  `CoreAnalysisOutputSchema` (`lib/ingestion/schema.ts`); persisted to a new
+  `core_analysis` table (`supabase/migrations/002_core_analysis.sql`), one
+  row per feedback item.
+- **The route**: `app/api/webhooks/zendesk/route.ts` — verifies the
+  request, normalizes the ticket (`lib/ingestion/zendesk-webhook.ts`),
+  saves it as a `feedback_item`, runs the agent, and if
+  `zendesk_priority_escalation` is true, writes back to the real ticket:
+  sets priority to urgent and adds a `churn_risk_flagged` tag.
+- **Auth ended up as a bearer token, not HMAC signing**: originally built
+  signature verification (`X-Zendesk-Webhook-Signature` HMAC-SHA256) per
+  Zendesk's docs, but the signing secret isn't exposed on this account's
+  webhook creation form (only on a detail-page tab in some
+  accounts/versions). Switched to `Authorization: Bearer <token>` — a
+  secret the user generates and controls directly, checked with a
+  timing-safe comparison against `ZENDESK_WEBHOOK_SECRET`. The unused HMAC
+  function is left in `zendesk-webhook.ts` in case the signing-secret path
+  becomes available later.
+- **Escalation tag didn't stick at first**: the initial priority-escalation
+  write-back set `additional_tags` on the single-ticket `PUT
+  /tickets/{id}.json` call — Zendesk silently ignores that field there;
+  it's only honored on the bulk `update_many` endpoint. Priority changed
+  fine (so it looked like it was working), but the tag never appeared.
+  Fixed by splitting into two calls: the `PUT .../tickets/{id}.json` for
+  priority, and a second `PUT .../tickets/{id}/tags.json` (which adds
+  without clobbering existing tags) for the tag. Verified directly against
+  the live Zendesk API before and after to confirm the exact failure mode.
+- **A chain of deploy issues, not code bugs, delayed verification**:
+  1. Zendesk's webhook Endpoint URL was typo'd `/api/webhook/zendesk`
+     (singular) against the actual route `/api/webhooks/zendesk` (plural)
+     → real 404s, visible in `vercel logs --json`.
+  2. The direct `*.vercel.app` deployment URL returns Vercel's own
+     Deployment Protection 401 ("Protected deployment") before any app code
+     runs — easy to mistake for the app's own auth. `ccpilot.vercel.app`
+     (the production alias) is unprotected and is the right URL to test
+     against and give to Zendesk.
+  3. **All of this code sat as uncommitted local changes** — the live
+     Vercel deployment was still built from the last *pushed* commit, so
+     the production alias gave a genuine 404 for a route that existed
+     locally. `vercel cache purge` was tried first (a real red herring) and
+     changed nothing, since there was no cache involved — the route
+     literally didn't exist in any deployed build yet. Fixed by committing,
+     pushing to `origin/master`, and running `vercel --prod --yes`
+     manually — **this project has no GitHub-integration auto-deploy**,
+     confirmed via `gh api repos/.../hooks` returning `[]`; every deploy
+     this session was a manual `vercel --prod --yes` after pushing.
+  4. The Zendesk trigger's two conditions (`Ticket is Created`, `Comment is
+     Public`) were both under **"Meet ALL"** instead of **"Meet ANY"** —
+     that combination only fires on a ticket's very first comment, never on
+     a later comment added to an existing ticket. Moved both into the ANY
+     group.
+- Verified end-to-end against the live Zendesk trial account and Supabase:
+  a real comment with churn language produced `churn_risk_score: 0.92`,
+  `zendesk_priority_escalation: true`, and the ticket's priority + tag both
+  updated in Zendesk.
+
 ## 2026-08-19 — Fix Vercel Data Cache silently serving stale Supabase reads
 
 After the G2 purge (below), the live site kept returning the old,

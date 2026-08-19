@@ -5,26 +5,32 @@
 Ingest customer feedback from **Play Store** and **Support Tickets**, normalize into one schema, run a five-stage Claude analysis pipeline, and present everything on a single interactive dashboard.
 
 ```
-CSV / live sync ──► feedback_items (Supabase + pgvector)
-                    │
-                    ▼
-         Postgres job queue (pipeline_jobs)
-                    │
-    ┌───────────────┼───────────────┐
-    ▼               ▼               ▼
- pain_points   churn_signals   embeddings
-    │               │               │
-    └───────────────┴──────► k-means clusters
+CSV / batch sync ──► feedback_items (Supabase + pgvector) ◄── Zendesk webhook
+                    │                                              │
+                    ▼                                              ▼
+         Postgres job queue (pipeline_jobs)              Core Analysis Agent
+                    │                                              │
+    ┌───────────────┼───────────────┐                              ▼
+    ▼               ▼               ▼                       core_analysis
+ pain_points   churn_signals   embeddings                          │
+    │               │               │                    escalate? ──► Zendesk
+    └───────────────┴──────► k-means clusters             (priority + tag)
                                 │
                                 ▼
                             features
                                 │
                                 ▼
-                             roadmap
+                             roadmap ──► drag to Now ──► Jira issue
                                 │
                                 ▼
                      Unified dashboard (/)
 ```
+
+Two parallel paths write into `feedback_items`: the batch pipeline above
+(CSV upload / manual "Sync Zendesk") and the real-time Zendesk **webhook**,
+which additionally runs a dedicated single-item agent (not the 5-stage
+pipeline) and can write back into Zendesk on high churn risk. See "Real-time
+analysis" below.
 
 ## Shared schema
 
@@ -58,7 +64,23 @@ Every source normalizes immediately on ingest:
 
 `lib/ingestion/zendesk-live.ts` fetches tickets via `GET /api/v2/tickets.json` and normalizes them, triggered from Admin → "Sync Zendesk" (`POST /api/ingest` with `{action: "sync_zendesk"}`, admin-token gated).
 
-Auth is **OAuth 2.0 client credentials** (`POST /oauth/tokens`, `grant_type=client_credentials`), not a static API token — Zendesk blocked new API-token creation for accounts created on/after 2026-07-28 and is fully retiring them by 2027-04-30. Create a **Confidential** OAuth client in Admin Center → Apps and integrations → APIs → OAuth clients (no redirect URL needed for this grant type); the client's Identifier/Secret become `ZENDESK_CLIENT_ID`/`ZENDESK_CLIENT_SECRET`. The access token is short-lived (~30 min) and cached in-memory per process, re-fetched automatically on expiry.
+Auth is **OAuth 2.0 client credentials** (`POST /oauth/tokens`, `grant_type=client_credentials`), not a static API token — Zendesk blocked new API-token creation for accounts created on/after 2026-07-28 and is fully retiring them by 2027-04-30. Create a **Confidential** OAuth client in Admin Center → Apps and integrations → APIs → OAuth clients (no redirect URL needed for this grant type); the client's Identifier/Secret become `ZENDESK_CLIENT_ID`/`ZENDESK_CLIENT_SECRET`. The access token is short-lived (~30 min) and cached in-memory per process, re-fetched automatically on expiry. Scope is `tickets:read tickets:write` — write is needed for the priority-escalation write-back described below, shared via the same `getAccessToken` helper.
+
+## Real-time analysis (Core Analysis Agent)
+
+Separate from the 5-stage batch pipeline: `app/api/webhooks/zendesk/route.ts` receives a webhook call on every new ticket or public comment and runs a single-purpose agent (`lib/pipeline/core-analysis.ts`, `runCoreAnalysis`) immediately, no waiting for a manual "Sync Zendesk" or pipeline re-run.
+
+- **Trigger**: a Zendesk trigger (Admin Center → Objects and rules → Triggers) with conditions `Ticket is Created` **OR** `Comment is Public` (must be in the "Meet ANY" group — "Meet ALL" only fires on a ticket's first comment) calls an active webhook (Admin Center → Apps and integrations → Webhooks) pointed at `/api/webhooks/zendesk`, with a JSON body template mapping ticket fields (id, subject, description, requester, organization, tags, priority, a custom `customer_tier` field if you have one) into the payload shape `lib/ingestion/zendesk-webhook.ts` expects.
+- **Auth**: a bearer token (`Authorization: Bearer <token>`, verified with a timing-safe comparison against `ZENDESK_WEBHOOK_SECRET`) — chosen over HMAC signature verification because the signing secret isn't exposed on this account's webhook creation form. `verifyZendeskSignature` (HMAC) is still in `lib/ingestion/zendesk-webhook.ts`, unused, in case that path opens up later.
+- **The agent**: strict-JSON output (`CoreAnalysisOutputSchema`, `lib/ingestion/schema.ts`) — `sentiment`, `churn_risk_score` (0–1 float), `primary_pain_point`, `category`, `key_quotes`, `actionable_recommendation`, `zendesk_priority_escalation` (true when score ≥ 0.75 or a critical bug). Persisted one row per feedback item in `core_analysis` (`supabase/migrations/002_core_analysis.sql`).
+- **Escalation write-back**: when `zendesk_priority_escalation` is true, the route sets the ticket to `urgent` priority (`PUT /tickets/{id}.json`) and adds a `churn_risk_flagged` tag via a **separate** call to `PUT /tickets/{id}/tags.json` — Zendesk silently ignores `additional_tags` on the single-ticket update endpoint (it's only honored on the bulk `update_many` endpoint), so the tag needs its own request. Both are best-effort: failures are logged, never fail the webhook response.
+- **Dashboard**: `components/dashboard/LiveAnalysis.tsx` surfaces `core_analysis` joined to `feedback_items`, sorted by churn risk, capped to the top 10 in the rendered list (stat tiles still reflect the full filtered set).
+
+This project has **no GitHub-integration auto-deploy on Vercel** (confirmed via `gh api repos/.../hooks` returning `[]`) — every change needs `git push` **and** a manual `vercel --prod --yes` to actually go live; pushing to GitHub alone does nothing.
+
+## Jira integration
+
+Dragging a roadmap card into **Now** (`PATCH /api/roadmap`) auto-creates a real Jira issue via `lib/integrations/jira.ts` (`hasJiraCreds`, `createJiraIssue`) — direct REST API v3 (`POST /rest/api/3/issue`) with Basic Auth (`email:apiToken`), the same server-to-server pattern as the Zendesk OAuth client, no Zapier/Make in between. Best-effort (try/catch, logs and continues) and short-circuits if the roadmap row already has a `jira_issue_key`, so re-dragging the same card doesn't create duplicates. `JIRA_BASE_URL`/`JIRA_EMAIL`/`JIRA_API_TOKEN`/`JIRA_PROJECT_KEY`/`JIRA_ISSUE_TYPE` (optional, defaults to `Task`) in env. `JIRA_PROJECT_KEY` must be an actual Jira Software/Work Management project's key (visible in Jira's Spaces/Projects list, e.g. `KAN`) — not an Atlassian Home "initiative" page, which looks similar in the UI but has no issue tracker and returns the same permissions-style error from the API either way.
 
 ## Pipeline design
 
@@ -91,11 +113,15 @@ Otherwise the app uses `data/local-db.json` so you can demo without cloud creden
 
 ## Dashboard
 
-Single-page app (`/`) with a global filter context (company, source, date, severity) that applies across every view. The left sidebar (`SidebarNav`) is a real client-side view switcher (`ViewProvider`/`useView`, `components/dashboard/ViewProvider.tsx`) — only one section renders at a time: AI Suggestions, Pain Points, Churn, Clusters, Features, Roadmap, or Admin (visually demoted below a separator — operator-only, not a peer analyst view). Below the `lg` breakpoint the sidebar is hidden and `MobileViewSelect` (a `Select` dropdown) takes over as the nav.
+Single-page app (`/`) with one section rendering at a time: AI Suggestions, Pain Points, Churn, Live Analysis, Clusters, Features, Roadmap, or Admin. Navigation is a persistent card grid (`ViewCardNav`, `components/dashboard/ViewCardNav.tsx`) in the main content area — one `Card` per view, active one ringed in teal, Admin/Pipeline visually muted (operator-only, not a peer analyst view). Responsive at every breakpoint on its own; there is no separate mobile nav. View state itself is still `ViewProvider`/`useView` (`components/dashboard/ViewProvider.tsx`).
+
+There is **no visible filter UI** — the company/source/date/severity filter bar was removed as part of an aesthetic redesign. The filter context/plumbing (`lib/filters/context.tsx`, `applyFilters` in `lib/dashboard/utils.ts`) still exists internally, since 6 files read it (`ChurnRisk`, `PainPoints`, `LiveAnalysis`, `Clusters`, `AISuggestions`'s cache `filterKey`, and server-side `app/api/suggestions/route.ts`), but its default state now permanently resolves to "everything": the date range is a wide fixed window, sources are the full enum, severity is the full 1–5 range, and companies auto-register from whatever's actually in the loaded data (`DashboardProvider.tsx` calls `registerCompanies` on every data refresh) rather than a hardcoded demo list. If you ever need to reintroduce filtering UI, that's the context to build against — don't re-derive it.
+
+Pain Points, Churn Risk, Features, and Live Analysis each cap their rendered list to the **top 10** by their severity-equivalent metric (pain-point severity, churn weighted score, feature impact score, churn risk score) — a summary label above each list/table says which sort and, for Pain Points, how many matched if fewer than 10.
 
 Shared presentational components live in `components/dashboard/shared/` (`SectionHeader`, `StatGrid`) and every section is built on the shadcn `Card`/`Table` primitives (`components/ui/`) rather than ad hoc markup, so spacing/radius/shadow stay consistent. Chart colors are centralized in `lib/dashboard/theme.ts` (mirrors the `--chart-1..5` CSS vars in `app/globals.css`) with one semantic mapping: teal = brand/positive, terracotta = attention/medium, red = critical only, slate = neutral. Navy is reserved for sidebar chrome and never appears in data viz.
 
-CSV upload and Zendesk sync (`IngestPanel`, `components/dashboard/IngestPanel.tsx`) live permanently in the sidebar rather than inside any switched view — they're operator actions that should stay reachable no matter what an analyst is currently looking at. Admin holds only cluster controls and the pipeline stage table.
+The sidebar (`SidebarNav`) is now minimal: CCPilot branding, `IngestPanel` (CSV upload + Zendesk sync), and sign-in/out — no navigation lives there anymore.
 
 **Tailwind version note:** this project runs Tailwind v3.4.1. The installed shadcn `components/ui/` primitives were originally generated for Tailwind v4 and used v4-only syntax (`px-(--var)`, `data-open:`, `data-checked:`, etc.) that v3 silently fails to parse — no error, just missing CSS. Several of these were found and fixed (card, slider, checkbox, separator, sheet, select, dropdown-menu var-syntax). If a shadcn component looks unstyled or a state variant (hover/open/checked/disabled) doesn't visually apply, check for bare `data-x:`/`-(--var)` syntax first — the fix is the v3 bracket form (`data-[state=x]:`, `[var(--x)]`).
 
@@ -109,6 +135,8 @@ Single-admin model backed by **Supabase Auth** (email/password) — no separate 
 | `POST /api/pipeline` | always (re-runs a pipeline stage — real Claude/Voyage spend) |
 | `PATCH /api/roadmap` | always (drag-and-drop bucket override) |
 | `POST /api/suggestions` | only when `force: true` (the "Regenerate" button — bypasses cache, real Claude spend) |
+
+`POST /api/webhooks/zendesk` is a separate case: it's called by Zendesk, not a signed-in user, so it can't use the Supabase-session pattern above. It's gated instead by a bearer token (`Authorization: Bearer <token>`, timing-safe compared against `ZENDESK_WEBHOOK_SECRET`) — see "Real-time analysis" above.
 
 - `lib/supabase/auth-browser.ts` / `auth-server.ts` — cookie-backed Supabase clients (`@supabase/ssr`), separate from `lib/supabase/client.ts` (the data-access client, which never touches auth/cookies).
 - `middleware.ts` — refreshes the session cookie every request via `getClaims()` (JWT-verified). Uses Next 14's `middleware.ts`/`export function middleware` convention — this project pins Next 14.2.35, not the `proxy.ts` convention newer Next versions/docs now show.
