@@ -16,7 +16,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const authFail = requireAdminAuth(req);
+  const authFail = await requireAdminAuth();
   if (authFail) return authFail;
 
   try {

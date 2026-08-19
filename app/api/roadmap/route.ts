@@ -7,7 +7,7 @@ import { requireAdminAuth } from "@/lib/auth/admin";
 export const dynamic = "force-dynamic";
 
 export async function PATCH(req: NextRequest) {
-  const authFail = requireAdminAuth(req);
+  const authFail = await requireAdminAuth();
   if (authFail) return authFail;
 
   try {

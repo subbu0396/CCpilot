@@ -1,14 +1,41 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { VIEWS, useView } from "./ViewProvider";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { IngestPanel } from "./IngestPanel";
+import { createAuthBrowserClient } from "@/lib/supabase/auth-browser";
 
 const MAIN_VIEWS = VIEWS.filter((v) => v.id !== "admin");
 const ADMIN_VIEW = VIEWS.find((v) => v.id === "admin")!;
 
+function useAuthEmail(): string | null {
+  const [email, setEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createAuthBrowserClient();
+    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setEmail(session?.user?.email ?? null);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  return email;
+}
+
 export function SidebarNav() {
   const { view, setView } = useView();
+  const router = useRouter();
+  const email = useAuthEmail();
+
+  async function signOut() {
+    const supabase = createAuthBrowserClient();
+    await supabase.auth.signOut();
+    router.refresh();
+  }
 
   return (
     <aside className="hidden w-56 shrink-0 border-r border-slate-200 bg-[#1a2332] text-[#f7f5f1] lg:block">
@@ -55,6 +82,31 @@ export function SidebarNav() {
           >
             {ADMIN_VIEW.label}
           </button>
+
+          <div className="mt-2 px-2">
+            {email ? (
+              <div className="flex items-center justify-between gap-2">
+                <p className="truncate text-[10px] text-slate-500" title={email}>
+                  {email}
+                </p>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 px-1.5 text-[10px] text-slate-400 hover:text-white"
+                  onClick={() => void signOut()}
+                >
+                  Sign out
+                </Button>
+              </div>
+            ) : (
+              <a
+                href="/login"
+                className="text-[10px] text-slate-400 underline-offset-2 hover:text-white hover:underline"
+              >
+                Sign in
+              </a>
+            )}
+          </div>
           <p className="mt-2 px-2 text-[10px] text-slate-500">Single-page copilot</p>
         </div>
       </div>

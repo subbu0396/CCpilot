@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
     const force = Boolean(body.force);
 
     if (force) {
-      const authFail = requireAdminAuth(req);
+      const authFail = await requireAdminAuth();
       if (authFail) return authFail;
     }
 

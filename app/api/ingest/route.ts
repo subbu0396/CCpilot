@@ -12,7 +12,7 @@ import { fetchZendeskTickets, hasZendeskCreds } from "@/lib/ingestion/zendesk-li
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
-  const authFail = requireAdminAuth(req);
+  const authFail = await requireAdminAuth();
   if (authFail) return authFail;
 
   try {

@@ -1,17 +1,14 @@
-import { timingSafeEqual } from "node:crypto";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { createAuthServerClient } from "@/lib/supabase/auth-server";
 
-export function isAdminAuthorized(req: NextRequest): boolean {
-  const expected = process.env.ADMIN_TOKEN;
-  if (!expected) return false;
-  const provided = req.headers.get("x-admin-token") || "";
-  const expectedBuf = Buffer.from(expected);
-  const providedBuf = Buffer.from(provided);
-  if (expectedBuf.length !== providedBuf.length) return false;
-  return timingSafeEqual(expectedBuf, providedBuf);
+/** True if the current request carries a valid, signed-in Supabase session. */
+export async function isAdminAuthorized(): Promise<boolean> {
+  const supabase = await createAuthServerClient();
+  const { data, error } = await supabase.auth.getClaims();
+  return Boolean(data?.claims && !error);
 }
 
-export function requireAdminAuth(req: NextRequest): NextResponse | null {
-  if (isAdminAuthorized(req)) return null;
+export async function requireAdminAuth(): Promise<NextResponse | null> {
+  if (await isAdminAuthorized()) return null;
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 }
