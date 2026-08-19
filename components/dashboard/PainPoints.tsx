@@ -133,7 +133,7 @@ export function PainPoints() {
       }
       return b.feedback.timestamp.localeCompare(a.feedback.timestamp);
     });
-    return list.slice(0, 100);
+    return list.slice(0, 10);
   }, [withPain, q, sort]);
 
   return (
@@ -233,6 +233,10 @@ export function PainPoints() {
       </div>
 
       <Card className="py-0">
+        <div className="border-b px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500">
+          Top 10 {sort === "severity" ? "by severity" : "by date"}
+          {tableRows.length < 10 ? ` (${tableRows.length} match filters)` : ""}
+        </div>
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50 text-[11px] uppercase tracking-wide text-slate-500">
