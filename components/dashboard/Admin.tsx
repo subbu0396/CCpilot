@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { useDashboard } from "./DashboardProvider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -32,7 +31,6 @@ export function Admin() {
   const { data, refresh } = useDashboard();
   const [k, setK] = useState(8);
   const [status, setStatus] = useState<string>("");
-  const [preview, setPreview] = useState<string>("");
   const [running, setRunning] = useState(false);
 
   const latestByStage = useMemo(() => {
@@ -77,155 +75,50 @@ export function Admin() {
     }
   }
 
-  async function onUpload(source: string, file: File | null) {
-    if (!file) return;
-    try {
-      const form = new FormData();
-      form.set("file", file);
-      form.set("source", source);
-      form.set("preview", "1");
-      const previewRes = await adminFetch("/api/ingest", { method: "POST", body: form });
-      const previewJson = await previewRes.json();
-      setPreview(
-        `Preview ${source}: ${previewJson.count} rows\n` +
-          JSON.stringify(previewJson.preview?.slice(0, 2) ?? [], null, 2)
-      );
-
-      form.delete("preview");
-      const res = await adminFetch("/api/ingest", { method: "POST", body: form });
-      const json = await res.json();
-      setStatus(`Uploaded ${json.parsed ?? 0} ${source} rows (${json.mode})`);
-      await refresh();
-    } catch (err) {
-      setStatus(err instanceof Error ? err.message : String(err));
-    }
-  }
-
-  async function syncG2() {
-    setRunning(true);
-    setStatus("Syncing G2 via MCP CSV fallback…");
-    try {
-      const res = await adminFetch("/api/ingest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "sync_g2" }),
-      });
-      const json = await res.json();
-      setStatus(json.message || "G2 sync done");
-      await refresh();
-    } catch (err) {
-      setStatus(err instanceof Error ? err.message : String(err));
-    } finally {
-      setRunning(false);
-    }
-  }
-
-  async function syncZendesk() {
-    setRunning(true);
-    setStatus("Syncing Zendesk tickets…");
-    try {
-      const res = await adminFetch("/api/ingest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "sync_zendesk" }),
-      });
-      const json = await res.json();
-      setStatus(
-        json.message ||
-          `Zendesk sync: ${json.parsed ?? 0} tickets (${json.mode})`
-      );
-      await refresh();
-    } catch (err) {
-      setStatus(err instanceof Error ? err.message : String(err));
-    } finally {
-      setRunning(false);
-    }
-  }
-
   return (
     <section>
       <SectionHeader
         title="Admin / Pipeline"
-        subtitle="Ingest uploads, G2/Zendesk sync, and independently re-runnable stages"
+        subtitle="Independently re-runnable stages — ingest uploads and G2/Zendesk sync live in the sidebar"
       />
 
-      <div className="mb-4 grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>CSV / JSON upload</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {(
-                [
-                  ["playstore", "Play Store CSV"],
-                  ["ticket", "Support tickets (Zendesk / Freshdesk)"],
-                ] as const
-              ).map(([source, label]) => (
-                <div key={source}>
-                  <Label className="text-xs text-slate-500">{label}</Label>
-                  <Input
-                    type="file"
-                    accept=".csv,.json,text/csv,application/json"
-                    className="mt-1 bg-white"
-                    disabled={running}
-                    onChange={(e) => void onUpload(source, e.target.files?.[0] ?? null)}
-                  />
-                </div>
-              ))}
-              <Button onClick={() => void syncG2()} disabled={running}>
-                Sync G2 via MCP
-              </Button>
-              <Button onClick={() => void syncZendesk()} disabled={running}>
-                Sync Zendesk
-              </Button>
-            </div>
-            {preview && (
-              <pre className="mt-3 max-h-40 overflow-auto rounded-md bg-muted p-2 text-[10px] text-slate-600">
-                {preview}
-              </pre>
-            )}
-          </CardContent>
-        </Card>
+      <Card className="mb-4">
+        <CardHeader>
+          <CardTitle>Cluster controls</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Label className="text-xs text-slate-500">k = {k}</Label>
+          <Slider
+            className="mt-3 max-w-xs"
+            min={3}
+            max={16}
+            step={1}
+            value={[k]}
+            onValueChange={(v) => setK(v[0])}
+          />
+          <Button
+            className="mt-4"
+            variant="outline"
+            disabled={running}
+            onClick={() => void runStage("cluster", { k })}
+          >
+            Re-cluster
+          </Button>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Cluster controls</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Label className="text-xs text-slate-500">k = {k}</Label>
-            <Slider
-              className="mt-3"
-              min={3}
-              max={16}
-              step={1}
-              value={[k]}
-              onValueChange={(v) => setK(v[0])}
-            />
-            <Button
-              className="mt-4"
-              variant="outline"
-              disabled={running}
-              onClick={() => void runStage("cluster", { k })}
-            >
-              Re-cluster
-            </Button>
-
-            <div className="mt-6 rounded-md bg-muted p-3">
-              <p className="text-[11px] uppercase tracking-wide text-slate-500">
-                Token usage tracker
-              </p>
-              <p className="mt-1 text-lg font-semibold text-slate-900">
-                ${tokenTotals.cost.toFixed(4)}
-              </p>
-              <p className="text-xs text-slate-500">
-                ~{tokenTotals.tokens.toLocaleString()} tokens across recorded jobs
-                {data?.mode === "local" ? " (heuristic mode when no API keys)" : ""}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          <div className="mt-6 max-w-sm rounded-md bg-muted p-3">
+            <p className="text-[11px] uppercase tracking-wide text-slate-500">
+              Token usage tracker
+            </p>
+            <p className="mt-1 text-lg font-semibold text-slate-900">
+              ${tokenTotals.cost.toFixed(4)}
+            </p>
+            <p className="text-xs text-slate-500">
+              ~{tokenTotals.tokens.toLocaleString()} tokens across recorded jobs
+              {data?.mode === "local" ? " (heuristic mode when no API keys)" : ""}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="py-0">
         <Table>
