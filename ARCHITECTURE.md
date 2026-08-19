@@ -103,19 +103,22 @@ CSV upload and G2/Zendesk sync (`IngestPanel`, `components/dashboard/IngestPanel
 
 ## Auth
 
-Single-admin, shared-secret model — no user accounts. Every **read** route (`GET /api/dashboard`, `GET /api/pipeline`, and the automatic on-load `POST /api/suggestions` with `force: false`) is public, so the dashboard works as a passive demo link for anyone. Every **mutating / spend-triggering** route requires an `x-admin-token` header matching `ADMIN_TOKEN`:
+Single-admin model backed by **Supabase Auth** (email/password) — no separate token to distribute. Every **read** route (`GET /api/dashboard`, `GET /api/pipeline`, and the automatic on-load `POST /api/suggestions` with `force: false`) is public, so the dashboard works as a passive demo link for anyone. Every **mutating / spend-triggering** route requires a signed-in session:
 
 | Route | Gated when |
 |-------|------------|
-| `POST /api/ingest` | always (CSV upload, G2 sync) |
+| `POST /api/ingest` | always (CSV upload, G2/Zendesk sync) |
 | `POST /api/pipeline` | always (re-runs a pipeline stage — real Claude/Voyage spend) |
 | `PATCH /api/roadmap` | always (drag-and-drop bucket override) |
 | `POST /api/suggestions` | only when `force: true` (the "Regenerate" button — bypasses cache, real Claude spend) |
 
-- `lib/auth/admin.ts` — server-side check, `crypto.timingSafeEqual` comparison against `process.env.ADMIN_TOKEN`. Fails closed (401) if `ADMIN_TOKEN` isn't set.
-- `lib/auth/admin-client.ts` — client-side `adminFetch`: prompts once for the token, caches it in `sessionStorage`, clears + re-prompts on a 401.
+- `lib/supabase/auth-browser.ts` / `auth-server.ts` — cookie-backed Supabase clients (`@supabase/ssr`), separate from `lib/supabase/client.ts` (the data-access client, which never touches auth/cookies).
+- `middleware.ts` — refreshes the session cookie every request via `getClaims()` (JWT-verified). Uses Next 14's `middleware.ts`/`export function middleware` convention — this project pins Next 14.2.35, not the `proxy.ts` convention newer Next versions/docs now show.
+- `lib/auth/admin.ts` — `requireAdminAuth()` checks the Supabase session server-side (no more static-token comparison).
+- `lib/auth/admin-client.ts` — client-side `adminFetch`: session cookie is sent automatically; on a 401 it redirects to `/login` instead of prompting for anything.
+- `app/login/page.tsx` — email/password sign-in form. Sidebar shows the signed-in email + sign-out, or a "Sign in" link.
 - Admin/Roadmap-drag/Regenerate **UI stays fully visible** to everyone — only the underlying fetch is gated (hiding controls client-side would be security theater, and a portfolio visitor should still see the surface exists).
-- Generate a token with `openssl rand -hex 32`; set in `.env.local` and via `vercel env add ADMIN_TOKEN <environment>` (interactive prompt only — never as a CLI arg, to avoid shell-history leakage).
+- To add/reset the admin account: Supabase Dashboard → Authentication → Users, or `supabase.auth.admin.createUser({ email, password, email_confirm: true })` via the service-role client.
 
 ## Deployment
 

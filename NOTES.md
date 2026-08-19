@@ -3,6 +3,38 @@
 Running log of what changed and why, newest first. For full detail see the
 commit each entry references.
 
+## 2026-08-19 — Replace shared ADMIN_TOKEN with real Supabase Auth login (`ca4a94f`)
+
+The static `ADMIN_TOKEN` worked but was annoying in practice — a random hex
+string with nowhere obvious to look it up, pasted into a `window.prompt()`
+each session. Replaced with real Supabase Auth (email/password), using the
+same Supabase project this app already runs on (no new service).
+
+- Added `@supabase/ssr`, `lib/supabase/auth-browser.ts`/`auth-server.ts`
+  (cookie-backed clients, kept separate from the existing data-access
+  `lib/supabase/client.ts`), `middleware.ts` (session refresh via the
+  JWT-verified `getClaims()`, not the unverified `getSession()`), and
+  `app/login/page.tsx`.
+- `lib/auth/admin.ts`'s `requireAdminAuth()` now checks the session instead
+  of a header token — same call shape at every route, so
+  `app/api/{ingest,pipeline,roadmap,suggestions}/route.ts` only needed an
+  `await` added, no logic changes.
+- `lib/auth/admin-client.ts`'s `adminFetch` drops the prompt/sessionStorage
+  token entirely — redirects to `/login` on 401 instead.
+- Created the admin's actual Supabase Auth account via
+  `supabase.auth.admin.createUser()` (service-role, one-off script).
+- Removed `ADMIN_TOKEN` from `.env.local`, `.env.local.example`, and all
+  three Vercel environments.
+- **Version gotcha worth remembering:** current Supabase docs default to
+  Next.js's newer `proxy.ts` middleware convention — this project pins
+  Next 14.2.35, which only recognizes `middleware.ts`/`export function
+  middleware`. Copying the docs' file name verbatim would have silently
+  done nothing.
+- Verified end-to-end (Playwright): 401 without a session, login sets the
+  `sb-*-auth-token` cookie and redirects to `/`, authenticated admin
+  actions (sync, pipeline re-run) succeed with zero redirects and zero
+  console errors, sidebar renders the signed-in email.
+
 ## 2026-08-19 — Sidebar ingest panel + fix broken Tailwind v4 `data-*` variants (`9b3287a`, `ce92ede`)
 
 Follow-up bug reports on the redesign:
