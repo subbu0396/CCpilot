@@ -70,7 +70,7 @@ export function ChurnRisk() {
       rows
         .filter((r) => r.churn?.churn_risk === "high")
         .sort((a, b) => (b.churn?.weighted_score ?? 0) - (a.churn?.weighted_score ?? 0))
-        .slice(0, 40),
+        .slice(0, 10),
     [rows]
   );
 
@@ -137,7 +137,7 @@ export function ChurnRisk() {
 
       <Card className="py-0">
         <div className="border-b px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-          High-risk items
+          Top 10 high-risk items
         </div>
         <ul className="divide-y">
           {highRisk.map((r) => {

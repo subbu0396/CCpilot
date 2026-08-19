@@ -28,6 +28,7 @@ export function Features() {
     const clusterById = new Map(data.clusters.map((c) => [c.id, c]));
     return [...data.features]
       .sort((a, b) => b.impact_score - a.impact_score)
+      .slice(0, 10)
       .map((f) => ({
         ...f,
         effortNum: EFFORT_NUM[f.effort_estimate] ?? 3,
@@ -47,7 +48,7 @@ export function Features() {
     <section>
       <SectionHeader
         title="Features"
-        subtitle="Impact = cluster size × avg severity × churn weight"
+        subtitle="Top 10 by impact — cluster size × avg severity × churn weight"
       />
 
       <Card className="mb-4">

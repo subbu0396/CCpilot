@@ -56,6 +56,8 @@ export function LiveAnalysis() {
     return { total: rows.length, escalated, negative, avgChurn };
   }, [rows]);
 
+  const topRows = useMemo(() => rows.slice(0, 10), [rows]);
+
   return (
     <section>
       <SectionHeader
@@ -76,10 +78,10 @@ export function LiveAnalysis() {
 
       <Card className="py-0">
         <div className="border-b px-4 py-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-          Analyzed tickets
+          Top 10 by churn risk
         </div>
         <ul className="divide-y">
-          {rows.map((r) => {
+          {topRows.map((r) => {
             const open = expanded === r.feedback.id;
             return (
               <li key={r.feedback.id}>
@@ -138,7 +140,7 @@ export function LiveAnalysis() {
               </li>
             );
           })}
-          {!rows.length && (
+          {!topRows.length && (
             <li className="px-4 py-6 text-sm text-slate-500">
               No analyzed tickets for filters yet — trigger a ticket or comment in Zendesk to
               see it land here.
