@@ -4,7 +4,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { getPainPoints, getChurnRisk, getLiveAnalysis, getRoadmap } from "./tools/read";
-import { createJiraIssueTool, moveRoadmapItem, linkJiraIssue } from "./tools/actions";
+import { createJiraIssueTool, moveRoadmapItem, linkJiraIssue, transitionJiraIssueTool } from "./tools/actions";
 import { syncZendesk } from "./tools/sync";
 import { explainRoadmapItem } from "./tools/explain";
 
@@ -90,6 +90,19 @@ server.registerTool(
     },
   },
   async ({ roadmap_id, bucket }) => json(await moveRoadmapItem({ roadmap_id, bucket }))
+);
+
+server.registerTool(
+  "transition_jira_issue",
+  {
+    description:
+      "Transition a Jira issue to a target status by name (e.g. \"In Progress\", \"Done\", \"Resolved\") — resolves the right transition automatically from the issue's current workflow state, no transition ID needed. Requires JIRA_* env vars.",
+    inputSchema: {
+      issue_key: z.string().describe("e.g. \"KAN-2\""),
+      status: z.string().describe("Target status name, matched case-insensitively"),
+    },
+  },
+  async ({ issue_key, status }) => json(await transitionJiraIssueTool({ issue_key, status }))
 );
 
 server.registerTool(

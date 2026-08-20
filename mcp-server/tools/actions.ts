@@ -1,6 +1,6 @@
 import { isLocalMode, readDb, writeDb } from "@/lib/store/local-db";
 import { createServiceClient } from "@/lib/supabase/client";
-import { hasJiraCreds, createJiraIssue } from "@/lib/integrations/jira";
+import { hasJiraCreds, createJiraIssue, transitionJiraIssue } from "@/lib/integrations/jira";
 import type { RoadmapBucket, RoadmapItem, Feature, Cluster } from "@/lib/supabase/types";
 
 export async function createJiraIssueTool({
@@ -18,6 +18,21 @@ export async function createJiraIssueTool({
     );
   }
   return createJiraIssue({ summary, description, labels: labels ?? ["ccpilot"] });
+}
+
+export async function transitionJiraIssueTool({
+  issue_key,
+  status,
+}: {
+  issue_key: string;
+  status: string;
+}) {
+  if (!hasJiraCreds()) {
+    throw new Error(
+      "Jira is not configured — set JIRA_BASE_URL / JIRA_EMAIL / JIRA_API_TOKEN / JIRA_PROJECT_KEY."
+    );
+  }
+  return transitionJiraIssue(issue_key, status);
 }
 
 /**
