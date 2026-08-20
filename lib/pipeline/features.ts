@@ -77,23 +77,51 @@ async function loadClusters(): Promise<Cluster[]> {
   return rows.filter((c) => c.run_id === runId);
 }
 
-function avgChurnForCluster(clusterId: string): ChurnRisk | undefined {
-  if (!isLocalMode()) return undefined;
-  const db = readDb();
-  const memberIds = db.feedback_clusters
-    .filter((m) => m.cluster_id === clusterId)
-    .map((m) => m.feedback_item_id);
-  const risks = db.churn_signals
-    .filter((c) => memberIds.includes(c.feedback_item_id))
-    .map((c) => c.churn_risk);
+function bucketAvgRisk(risks: ChurnRisk[]): ChurnRisk | undefined {
   if (!risks.length) return undefined;
   const rank = { none: 0, low: 1, medium: 2, high: 3 } as const;
-  const avg =
-    risks.reduce((s, r) => s + rank[r], 0) / risks.length;
+  const avg = risks.reduce((s, r) => s + rank[r], 0) / risks.length;
   if (avg >= 2.5) return "high";
   if (avg >= 1.5) return "medium";
   if (avg >= 0.5) return "low";
   return "none";
+}
+
+/**
+ * Was local-mode only until this fix — silently returned undefined (churn
+ * weight 1, i.e. no-op) in Supabase/production, so impact_score never
+ * actually reflected churn risk outside local demo mode. Now queries
+ * feedback_clusters -> churn_signals in Supabase mode too.
+ */
+async function avgChurnForCluster(clusterId: string): Promise<ChurnRisk | undefined> {
+  if (isLocalMode()) {
+    const db = readDb();
+    const memberIds = db.feedback_clusters
+      .filter((m) => m.cluster_id === clusterId)
+      .map((m) => m.feedback_item_id);
+    const risks = db.churn_signals
+      .filter((c) => memberIds.includes(c.feedback_item_id))
+      .map((c) => c.churn_risk);
+    return bucketAvgRisk(risks);
+  }
+
+  const supabase = createServiceClient();
+  const { data: members, error: membersError } = await supabase
+    .from("feedback_clusters")
+    .select("feedback_item_id")
+    .eq("cluster_id", clusterId);
+  if (membersError) throw new Error(membersError.message);
+  const memberRows = (members ?? []) as { feedback_item_id: string }[];
+  const memberIds = memberRows.map((m) => m.feedback_item_id);
+  if (!memberIds.length) return undefined;
+
+  const { data: signals, error: signalsError } = await supabase
+    .from("churn_signals")
+    .select("churn_risk")
+    .in("feedback_item_id", memberIds);
+  if (signalsError) throw new Error(signalsError.message);
+  const signalRows = (signals ?? []) as { churn_risk: ChurnRisk }[];
+  return bucketAvgRisk(signalRows.map((s) => s.churn_risk));
 }
 
 export async function runFeatures(): Promise<{
@@ -132,7 +160,7 @@ export async function runFeatures(): Promise<{
         proposals = heuristicFeatures(cluster);
       }
 
-      const cw = churnWeight(avgChurnForCluster(cluster.id));
+      const cw = churnWeight(await avgChurnForCluster(cluster.id));
       for (const p of proposals) {
         const impact_score = Number(
           (
