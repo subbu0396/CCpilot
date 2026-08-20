@@ -5,6 +5,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { getPainPoints, getChurnRisk, getLiveAnalysis, getRoadmap } from "./tools/read";
 import { createJiraIssueTool, moveRoadmapItem } from "./tools/actions";
+import { syncZendesk } from "./tools/sync";
 
 const server = new McpServer({ name: "ccpilot", version: "0.1.0" });
 
@@ -88,6 +89,18 @@ server.registerTool(
     },
   },
   async ({ roadmap_id, bucket }) => json(await moveRoadmapItem({ roadmap_id, bucket }))
+);
+
+server.registerTool(
+  "sync_zendesk",
+  {
+    description:
+      "Pull the latest tickets/comments from Zendesk and persist them as feedback items (upsert by external id). Does not run the Core Analysis Agent — that only runs via the Zendesk webhook on new activity. Requires ZENDESK_* env vars.",
+    inputSchema: {
+      company: z.string().optional().describe("Only sync tickets for this company"),
+    },
+  },
+  async ({ company }) => json(await syncZendesk({ company }))
 );
 
 async function main() {

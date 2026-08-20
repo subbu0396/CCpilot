@@ -20,6 +20,7 @@ extra server to deploy, no new auth to manage.
 | `get_roadmap` | Roadmap items with feature name, impact, and linked Jira issue. `{ bucket? }` |
 | `create_jira_issue` | Create a standalone Jira issue. `{ summary, description, labels? }` |
 | `move_roadmap_item` | Move a roadmap item into now/next/later; moving into "now" auto-creates a Jira issue, same as dragging it in the dashboard. `{ roadmap_id, bucket }` |
+| `sync_zendesk` | Pull latest tickets/comments from Zendesk and upsert them as feedback items, same as the dashboard's "Sync" button. `{ company? }` |
 
 ## Running it
 
@@ -71,6 +72,6 @@ claude mcp add ccpilot -- npx tsx /absolute/path/to/ccpilot/mcp-server/index.ts
 
 ## Not yet built
 
-Triggering a live Zendesk sync from the agent (`fetchZendeskTickets` in
-`lib/ingestion/zendesk-live.ts` is portable, but persisting new items and running
-the Core Analysis Agent on them is a separate follow-up unit of work).
+Running the Core Analysis Agent (sentiment/churn scoring, Zendesk priority
+escalation) on items pulled in via `sync_zendesk` — that only runs today via the
+Zendesk webhook on new ticket/comment activity, not on a manual sync.
