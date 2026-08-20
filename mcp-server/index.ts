@@ -124,12 +124,13 @@ server.registerTool(
   "sync_zendesk",
   {
     description:
-      "Pull the latest tickets/comments from Zendesk and persist them as feedback items (upsert by external id). Does not run the Core Analysis Agent — that only runs via the Zendesk webhook on new activity. Requires ZENDESK_* env vars.",
+      "Pull the latest tickets/comments from Zendesk and persist them as feedback items (upsert by external id). Requires ZENDESK_* env vars. Pass analyze: true to also run the Core Analysis Agent on newly-synced tickets that aren't already scored (same scoring + priority-escalation write-back as the Zendesk webhook path) — opt-in and off by default since a full sync can touch many tickets and each analysis is a real Claude call.",
     inputSchema: {
       company: z.string().optional().describe("Only sync tickets for this company"),
+      analyze: z.boolean().optional().describe("Also run Core Analysis Agent scoring on newly-synced tickets (default false)"),
     },
   },
-  async ({ company }) => json(await syncZendesk({ company }))
+  async ({ company, analyze }) => json(await syncZendesk({ company, analyze }))
 );
 
 server.registerTool(

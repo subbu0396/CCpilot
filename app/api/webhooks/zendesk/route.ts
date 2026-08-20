@@ -8,44 +8,10 @@ import {
 import { validateFeedback } from "@/lib/ingestion/upsert";
 import { saveFeedbackItems, getFeedbackItemByExternalId } from "@/lib/store/feedback";
 import { runCoreAnalysis } from "@/lib/pipeline/core-analysis";
-import { hasZendeskCreds, getAccessToken } from "@/lib/ingestion/zendesk-live";
+import { escalateZendeskTicket } from "@/lib/ingestion/zendesk-live";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
-
-/**
- * Sets a Zendesk ticket to urgent priority + tags it when the Core Analysis
- * Agent flags escalation. Best-effort: failures here never fail the webhook
- * response. Two separate calls on purpose: `additional_tags` on the
- * single-ticket PUT is silently ignored by Zendesk (it's only honored on
- * the bulk update_many endpoint) — tags must go through the dedicated
- * PUT /tickets/{id}/tags.json endpoint, which adds without clobbering.
- */
-async function escalateZendeskTicket(ticketId: number | string) {
-  if (!hasZendeskCreds()) return;
-  try {
-    const subdomain = process.env.ZENDESK_SUBDOMAIN!;
-    const accessToken = await getAccessToken(subdomain);
-    const headers = {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    };
-
-    await fetch(`https://${subdomain}.zendesk.com/api/v2/tickets/${ticketId}.json`, {
-      method: "PUT",
-      headers,
-      body: JSON.stringify({ ticket: { priority: "urgent" } }),
-    });
-
-    await fetch(`https://${subdomain}.zendesk.com/api/v2/tickets/${ticketId}/tags.json`, {
-      method: "PUT",
-      headers,
-      body: JSON.stringify({ tags: ["churn_risk_flagged"] }),
-    });
-  } catch (err) {
-    console.error(`[zendesk-webhook] priority escalation failed for ticket ${ticketId}:`, err);
-  }
-}
 
 export async function POST(req: NextRequest) {
   if (!hasZendeskWebhookSecret()) {
