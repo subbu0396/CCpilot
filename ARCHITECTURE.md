@@ -32,6 +32,10 @@ which additionally runs a dedicated single-item agent (not the 5-stage
 pipeline) and can write back into Zendesk on high churn risk. See "Real-time
 analysis" below.
 
+A third, separate consumer of this same data: `mcp-server/` exposes it as
+tools for Claude Desktop/Code (an agent/chat interface alongside the
+dashboard, not instead of it). See "MCP server" below.
+
 ## Shared schema
 
 Every source normalizes immediately on ingest:
@@ -81,6 +85,52 @@ This project has **no GitHub-integration auto-deploy on Vercel** (confirmed via 
 ## Jira integration
 
 Dragging a roadmap card into **Now** (`PATCH /api/roadmap`) auto-creates a real Jira issue via `lib/integrations/jira.ts` (`hasJiraCreds`, `createJiraIssue`) — direct REST API v3 (`POST /rest/api/3/issue`) with Basic Auth (`email:apiToken`), the same server-to-server pattern as the Zendesk OAuth client, no Zapier/Make in between. Best-effort (try/catch, logs and continues) and short-circuits if the roadmap row already has a `jira_issue_key`, so re-dragging the same card doesn't create duplicates. `JIRA_BASE_URL`/`JIRA_EMAIL`/`JIRA_API_TOKEN`/`JIRA_PROJECT_KEY`/`JIRA_ISSUE_TYPE` (optional, defaults to `Task`) in env. `JIRA_PROJECT_KEY` must be an actual Jira Software/Work Management project's key (visible in Jira's Spaces/Projects list, e.g. `KAN`) — not an Atlassian Home "initiative" page, which looks similar in the UI but has no issue tracker and returns the same permissions-style error from the API either way.
+
+## MCP server (agent interface)
+
+`mcp-server/` is a second, much thinner consumer of the same backend the
+dashboard uses — a local [MCP](https://modelcontextprotocol.io) server (stdio
+transport, `mcp-server/index.ts`, run via `npm run mcp` / `tsx`) that exposes
+10 tools to Claude Desktop/Code, so churn risk, pain points, roadmap, and
+Jira/Zendesk are queryable and actionable from natural language instead of
+only through the dashboard UI. It's excluded from the Next.js build
+(`tsconfig.json`'s `exclude`) and has its own minimal `tsconfig.json`.
+
+This only works cheaply because it wraps **pure** functions — no new logic,
+no duplicated data access:
+
+- Read tools (`get_pain_points`, `get_churn_risk`, `get_live_analysis`,
+  `get_roadmap`) call `loadDashboardBundle()` (`lib/store/dashboard-data.ts`)
+  and mirror the dashboard components' own sort/cap logic, so an agent's
+  answer matches what's on screen.
+- Write tools call the same integration functions the app uses:
+  `create_jira_issue`/`link_jira_issue`/`transition_jira_issue` wrap
+  `lib/integrations/jira.ts`; `sync_zendesk` wraps
+  `lib/ingestion/zendesk-live.ts` + `lib/store/feedback.ts`; `move_roadmap_item`
+  duplicates `app/api/roadmap/route.ts`'s bucket-move + Jira-auto-create logic
+  (not calling the route itself, since it's gated behind `requireAdminAuth()`,
+  a browser-session check a trusted local process doesn't need).
+- `explain_roadmap_item` recomputes the actual impact/effort scoring trail
+  (`score = impact_score / EFFORT_MAP[effort_estimate]`, the real now/next/later
+  thresholds from `lib/pipeline/roadmap.ts`) and reconciles it against the
+  item's real stored bucket — bucket placement runs through an LLM judgment
+  call first and only falls back to the pure formula without an API key, so
+  the two can legitimately disagree; the tool explains the mismatch rather
+  than asserting the formula as fact. It also re-derives cluster churn risk
+  in-memory from the loaded bundle rather than reusing
+  `features.ts`'s `avgChurnForCluster`, which is local-mode only and silently
+  no-ops in Supabase/production.
+
+**Client setup**: registered separately in Claude Code (`claude mcp add`,
+scoped `-s local` — private to this project directory, not `-s user`) and
+Claude Desktop (`claude_desktop_config.json`'s top-level `mcpServers` block —
+must be top-level, not nested under `preferences`). These are independent
+configs; a client only loads a newly added/edited server on its next session
+start. Claude Desktop has no per-project scoping — any server registered
+there is available in every conversation, by platform design, not a fixable
+config detail.
+
+See `mcp-server/README.md` for the full tool table and setup instructions.
 
 ## Pipeline design
 

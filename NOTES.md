@@ -3,6 +3,90 @@
 Running log of what changed and why, newest first. For full detail see the
 commit each entry references.
 
+## 2026-08-20 — MCP server: agent/extension interface with 10 tools (`ddaf9c7` → `11e2d76`)
+
+Instead of building a second UI, wrapped CCPilot's existing backend as an
+[MCP](https://modelcontextprotocol.io) server so Claude Desktop/Code can query
+and act on churn risk, pain points, roadmap, and Jira/Zendesk directly from
+natural language. `mcp-server/index.ts` registers all tools over stdio; `tsx`
+runs it standalone (already a devDependency for `scripts/*.ts`), and
+`tsconfig.json` already had `mcp-server` in its `exclude` list from before this
+existed, so it doesn't touch the Next.js build.
+
+The whole thing works because the backend functions it wraps are **pure**
+(env vars + Supabase client, no Next.js request context) — `loadDashboardBundle`,
+`createJiraIssue`, `fetchZendeskTickets`, `runCoreAnalysis` all import directly
+with zero adaptation. The one place this broke down: `app/api/roadmap/route.ts`'s
+`PATCH` handler is gated behind `requireAdminAuth()` (uses `next/headers`
+`cookies()`), so its actual mutation logic (`createJiraForRoadmapItem`) is
+duplicated into `mcp-server/tools/actions.ts` rather than called via the route —
+a trusted local process doesn't need the browser-session auth check.
+
+Tools, built across several passes (`ddaf9c7`, `459621d`, `51f34a3`, `a90b5c4`,
+`11e2d76`):
+
+- **Read**: `get_pain_points`, `get_churn_risk`, `get_live_analysis`,
+  `get_roadmap` — each mirrors the exact sort/cap logic the dashboard
+  components use, so an agent's answer matches what's on screen.
+- **Write**: `create_jira_issue` (standalone ticket), `move_roadmap_item`
+  (bucket move + auto-create-Jira-on-Now, same as dragging a card),
+  `link_jira_issue` (attach an *existing* Jira key to a roadmap item without
+  creating a new one — needed once `create_jira_issue` had already been used to
+  file something standalone that later turned out to match a roadmap item),
+  `transition_jira_issue` (move an issue to a target status by name, resolving
+  the real transition ID from the issue's current workflow state — Jira
+  transition IDs are workflow-specific, not something to hardcode), and
+  `sync_zendesk` (fetch + upsert, mirrors the existing manual "Sync" action;
+  deliberately does **not** run the Core Analysis Agent, which stays
+  webhook-only, so a manual pull can't silently cascade into automated
+  escalation).
+- **Explain**: `explain_roadmap_item` — reconstructs the actual impact/effort
+  scoring math behind a roadmap item's bucket, with `compare_to_id` for "why is
+  A prioritized over B." Verified against real production data and caught a
+  real bug in the process: bucket placement runs through an LLM judgment call
+  first (`runRoadmap()` in `lib/pipeline/roadmap.ts`) and only falls back to
+  the literal heuristic formula/thresholds when there's no API key or the call
+  fails — so the formula doesn't always match the actual stored bucket. The
+  first version of this tool asserted the formula's predicted bucket as fact,
+  producing a visible self-contradiction ("in NOW... → NEXT") on a real item.
+  Fixed to compute `formula_bucket` separately and reconcile mismatches against
+  the real `bucket` instead of asserting one over the other. Also fixed a
+  churn-weighting gap along the way: `features.ts`'s `avgChurnForCluster` is
+  local-mode only and silently no-ops in Supabase/production — the explain tool
+  re-derives churn risk in memory from `DashboardBundle` instead, mode-agnostic,
+  without touching the live pipeline's actual scoring behavior.
+
+Every write tool was smoke-tested against real production data before being
+committed (a temporary `mcp-server/_verify.mts` script, deleted after each
+check) — this caught the `explain_roadmap_item` bug above, and confirmed
+`transition_jira_issue`'s error path lists valid statuses when given a bad one.
+
+**Client registration, and a scoping bug**: added via `claude mcp add` (Claude
+Code) and `claude_desktop_config.json`'s `mcpServers` block (Claude Desktop) —
+these are two entirely separate configs; adding to one doesn't add to the
+other, and a client only picks up a newly-registered/edited server on its next
+session start, not live. First registration used `-s user` scope (available in
+every project on the machine) by mistake; re-registered at `-s local` (private,
+this project only) once caught. Claude Desktop has no per-project scoping at
+all — that's a real platform limitation, not a config mistake, left as global
+by explicit choice.
+
+**Real usage this session**: filed `KAN-2` (standalone, Trackr/HubSpot churn
+signal) and `KAN-3` (standalone, Flowdesk SSO docs churn signal) via
+`create_jira_issue`, linked `KAN-3` to the matching "Self-Validating SSO/Okta
+Setup Wizard" roadmap card via `link_jira_issue`, then found that
+"Integration Field-Mapping & Deduplication Engine" (already on the roadmap in
+Next) was the real fix for what `KAN-2` described — linked `KAN-2` to it and
+moved it to Now (link-then-move order matters: `move_roadmap_item` only
+auto-creates a new issue when none is linked yet, so linking first prevented a
+duplicate). Resolved `KAN-2` via `transition_jira_issue` once done.
+
+Also wrote up the general pattern (backend-as-MCP-server, pure-function
+portability, read/write tool split, credential/config gotchas) as
+`mcp-agent-interface/README.md` in the separate `skills-agents` repo, with all
+CCPilot-specific identifiers (company names, project keys, domains, credential
+values) stripped.
+
 ## 2026-08-20 — Dashboard polish: enlarge branding, top-10 caps, fix a sort (`098ea89`, `ba48078`, `41dbbbb`, `a58c571`, `6f31ead`)
 
 Follow-up aesthetic/UX pass after the redesign below:
