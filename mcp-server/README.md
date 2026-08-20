@@ -20,6 +20,7 @@ extra server to deploy, no new auth to manage.
 | `get_roadmap` | Roadmap items with feature name, impact, and linked Jira issue. `{ bucket? }` |
 | `create_jira_issue` | Create a standalone Jira issue. `{ summary, description, labels? }` |
 | `move_roadmap_item` | Move a roadmap item into now/next/later; moving into "now" auto-creates a Jira issue, same as dragging it in the dashboard. `{ roadmap_id, bucket }` |
+| `link_jira_issue` | Attach an existing Jira issue key/url to a roadmap item, without creating a new one (use instead of `move_roadmap_item` when a ticket already exists for the same work). `{ roadmap_id, jira_issue_key, jira_issue_url }` |
 | `sync_zendesk` | Pull latest tickets/comments from Zendesk and upsert them as feedback items, same as the dashboard's "Sync" button. `{ company? }` |
 | `explain_roadmap_item` | Explains why a roadmap item is in its bucket, grounded in the real impact/effort/churn scoring math (not just the stored one-line rationale). Pass `compare_to_id` to explain why one item outranks another. `{ roadmap_id, compare_to_id? }` |
 

@@ -88,6 +88,36 @@ async function createJiraForRoadmapItem(item: RoadmapItem) {
   return { key, url };
 }
 
+export async function linkJiraIssue({
+  roadmap_id,
+  jira_issue_key,
+  jira_issue_url,
+}: {
+  roadmap_id: string;
+  jira_issue_key: string;
+  jira_issue_url: string;
+}) {
+  if (isLocalMode()) {
+    const db = readDb();
+    const idx = db.roadmap.findIndex((r) => r.id === roadmap_id);
+    if (idx < 0) throw new Error(`Roadmap item ${roadmap_id} not found.`);
+    db.roadmap[idx] = { ...db.roadmap[idx], jira_issue_key, jira_issue_url };
+    writeDb(db);
+    return { id: db.roadmap[idx].id, jira_issue_key, jira_issue_url };
+  }
+
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("roadmap")
+    .update({ jira_issue_key, jira_issue_url } as never)
+    .eq("id", roadmap_id)
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  const updated = data as RoadmapItem;
+  return { id: updated.id, jira_issue_key: updated.jira_issue_key, jira_issue_url: updated.jira_issue_url };
+}
+
 export async function moveRoadmapItem({
   roadmap_id,
   bucket,

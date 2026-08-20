@@ -4,7 +4,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { getPainPoints, getChurnRisk, getLiveAnalysis, getRoadmap } from "./tools/read";
-import { createJiraIssueTool, moveRoadmapItem } from "./tools/actions";
+import { createJiraIssueTool, moveRoadmapItem, linkJiraIssue } from "./tools/actions";
 import { syncZendesk } from "./tools/sync";
 import { explainRoadmapItem } from "./tools/explain";
 
@@ -90,6 +90,21 @@ server.registerTool(
     },
   },
   async ({ roadmap_id, bucket }) => json(await moveRoadmapItem({ roadmap_id, bucket }))
+);
+
+server.registerTool(
+  "link_jira_issue",
+  {
+    description:
+      "Attach an existing Jira issue (key + url) to a roadmap item without creating a new one. Use this when a Jira ticket already exists for the same work (e.g. filed as a standalone issue) and you want the roadmap card to reflect it, instead of move_roadmap_item's auto-create-on-Now behavior.",
+    inputSchema: {
+      roadmap_id: z.string().describe("The roadmap item's id"),
+      jira_issue_key: z.string().describe("e.g. \"KAN-3\""),
+      jira_issue_url: z.string().describe("Full Jira issue URL"),
+    },
+  },
+  async ({ roadmap_id, jira_issue_key, jira_issue_url }) =>
+    json(await linkJiraIssue({ roadmap_id, jira_issue_key, jira_issue_url }))
 );
 
 server.registerTool(
