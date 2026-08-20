@@ -132,6 +132,29 @@ config detail.
 
 See `mcp-server/README.md` for the full tool table and setup instructions.
 
+## Weekly Digest Agent
+
+The first **push-based** surface — everything else (dashboard, MCP tools) is
+pull. `app/api/cron/weekly-digest/route.ts`, triggered by Vercel Cron
+(`vercel.ts`, `0 13 * * 1` — Monday 13:00 UTC), emails a summary: top 5 churn
+risk items, top 5 pain points, roadmap items promoted to Now in the last 7
+days, and this week's escalation count.
+
+- `lib/pipeline/digest.ts` builds the content from `loadDashboardBundle()`
+  (same data-access function as everything else), renders plain HTML, sends
+  via Resend with a weekly idempotency key (`weekly-digest/<date>`) so a Cron
+  retry can't double-send.
+- The route is gated by `Authorization: Bearer ${CRON_SECRET}` — Vercel sends
+  this automatically on scheduled invocations, the standard protection
+  pattern (otherwise anyone who finds the URL could trigger it).
+- Resend is provisioned via the Vercel Marketplace (`vercel integration add
+  resend`), not a hand-wired SDK call with an invented key. No custom domain
+  is verified yet, so sending runs in Resend's **sandbox mode** — only from
+  `onboarding@resend.dev`, only to the Resend account's own verified email.
+  Verifying a real domain later lifts this with no code change.
+- `vercel.ts` is this project's cron/config file — the current recommended
+  format (typed, replaces `vercel.json`); there was neither before this.
+
 ## Pipeline design
 
 Stages are **independently re-runnable** and **idempotent** (each overwrites only its own tables/columns):

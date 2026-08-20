@@ -3,6 +3,49 @@
 Running log of what changed and why, newest first. For full detail see the
 commit each entry references.
 
+## 2026-08-20 — Weekly Digest Agent: Vercel Cron + Resend email (`0febc4b` → `6408838`)
+
+First push-based surface — the dashboard and every MCP tool are pull-based
+(someone has to open the app or ask a question), so nothing surfaced
+proactively when a new high-churn signal appeared or a roadmap item got
+promoted. This adds an unattended Vercel Cron job (Monday 13:00 UTC,
+`/api/cron/weekly-digest`) that emails a summary: top 5 churn risk items, top
+5 pain points, roadmap items promoted to Now in the last 7 days, and this
+week's escalation count.
+
+- `lib/pipeline/digest.ts` builds the digest from `loadDashboardBundle()` (the
+  same data-access function every other consumer uses), renders plain HTML,
+  and sends via Resend with a weekly idempotency key (`weekly-digest/<date>`)
+  so a Cron retry — or a manual re-trigger the same day — can't double-send.
+  Degrades gracefully (`sent: false`, doesn't throw) if `RESEND_API_KEY`/
+  `DIGEST_EMAIL_TO` aren't set, matching every other best-effort integration
+  in this codebase.
+- Cron auth follows the standard Vercel pattern: `Authorization: Bearer
+  ${CRON_SECRET}`, which Vercel sends automatically on scheduled invocations.
+- `vercel.ts` (new, typed) — this project had neither `vercel.json` nor
+  `vercel.ts` before; per current Vercel guidance `vercel.ts` is the
+  recommended format now, so that's what got added rather than
+  `vercel.json`.
+- **Resend was provisioned via the Vercel Marketplace CLI**
+  (`vercel integration add resend --claim -m domain=... -m region=...`), per
+  the `marketplace` skill's required categorize → discover → install → build
+  flow — `vercel integration discover --category messaging` returned exactly
+  one result (Resend), confirming the choice rather than assuming it. The
+  integration required a domain-you-own at provisioning time; none was
+  available, so it was provisioned with a placeholder (`example.com`) and
+  sending currently runs in **Resend's sandbox mode**: from
+  `onboarding@resend.dev`, deliverable only to the Resend account's own
+  verified email. Verifying a real domain later removes that limit with zero
+  code changes — the `from`/`to` logic doesn't change, only what Resend
+  allows.
+- Verified end-to-end against real production data before shipping: triggered
+  the route locally with a real `CRON_SECRET`, confirmed a real email arrived
+  with content matching the dashboard, confirmed 401 on missing/wrong auth,
+  then after deploying confirmed the cron actually registered
+  (`vercel crons list`) and triggered it live in production
+  (`vercel crons run`) — got a 200, and the idempotency key correctly
+  prevented a duplicate send for the same day.
+
 ## 2026-08-20 — MCP server: agent/extension interface with 10 tools (`ddaf9c7` → `11e2d76`)
 
 Instead of building a second UI, wrapped CCPilot's existing backend as an
