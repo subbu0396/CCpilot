@@ -6,6 +6,7 @@ import { z } from "zod";
 import { getPainPoints, getChurnRisk, getLiveAnalysis, getRoadmap } from "./tools/read";
 import { createJiraIssueTool, moveRoadmapItem } from "./tools/actions";
 import { syncZendesk } from "./tools/sync";
+import { explainRoadmapItem } from "./tools/explain";
 
 const server = new McpServer({ name: "ccpilot", version: "0.1.0" });
 
@@ -101,6 +102,20 @@ server.registerTool(
     },
   },
   async ({ company }) => json(await syncZendesk({ company }))
+);
+
+server.registerTool(
+  "explain_roadmap_item",
+  {
+    description:
+      "Explains why a roadmap item is in its bucket (Now/Next/Later), grounded in the actual impact/effort/churn scoring math. Pass compare_to_id to explain why one item is prioritized over another.",
+    inputSchema: {
+      roadmap_id: z.string().describe("The roadmap item to explain"),
+      compare_to_id: z.string().optional().describe("Another roadmap item to compare against"),
+    },
+  },
+  async ({ roadmap_id, compare_to_id }) =>
+    json(await explainRoadmapItem({ roadmap_id, compare_to_id }))
 );
 
 async function main() {
