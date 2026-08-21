@@ -17,6 +17,8 @@ import { roadmapToCsv, roadmapToMarkdown } from "@/lib/dashboard/export-roadmap"
 import type { RoadmapBucket } from "@/lib/supabase/types";
 import { adminFetch } from "@/lib/auth/admin-client";
 import { SectionHeader } from "./shared/SectionHeader";
+import { ExplainDialog } from "./ExplainDialog";
+import { JiraActions } from "./JiraActions";
 
 function DraggableCard({
   id,
@@ -217,6 +219,14 @@ export function Roadmap() {
                         </a>
                       )}
                     </div>
+                    <div className="mt-2 flex items-center gap-1.5">
+                      <ExplainDialog roadmapId={i.id} featureName={i.feature.feature_name} />
+                    </div>
+                    <JiraActions
+                      roadmapId={i.id}
+                      jiraIssueKey={i.jira_issue_key}
+                      onDone={refresh}
+                    />
                     <p className="mt-2 text-[10px] text-slate-400">{i.clusterLabel}</p>
                   </DraggableCard>
                 ))}

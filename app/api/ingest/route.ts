@@ -4,7 +4,8 @@ import { parseTicketsCsv } from "@/lib/ingestion/tickets";
 import { validateFeedback } from "@/lib/ingestion/upsert";
 import { saveFeedbackItems } from "@/lib/store/feedback";
 import { requireAdminAuth } from "@/lib/auth/admin";
-import { fetchZendeskTickets, hasZendeskCreds } from "@/lib/ingestion/zendesk-live";
+import { hasZendeskCreds } from "@/lib/ingestion/zendesk-live";
+import { syncZendesk } from "@/lib/actions/sync";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -29,16 +30,13 @@ export async function POST(req: NextRequest) {
         }
 
         const company = typeof body.company === "string" ? body.company : undefined;
-        const rows = await fetchZendeskTickets(company);
-        const { valid, errors } = validateFeedback(rows);
-        const saved = await saveFeedbackItems(valid);
+        const analyze = body.analyze === true;
+        const result = await syncZendesk({ company, analyze });
 
         return NextResponse.json({
           ok: true,
           source: "zendesk_live",
-          ...saved,
-          parsed: valid.length,
-          validation_errors: errors.slice(0, 10),
+          ...result,
         });
       }
 

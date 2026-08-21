@@ -3,6 +3,47 @@
 Running log of what changed and why, newest first. For full detail see the
 commit each entry references.
 
+## 2026-08-21 — MCP agents surfaced in the dashboard UI
+
+Five agent actions previously reachable only via the `ccpilot` MCP server
+(Claude Desktop/Code) now have real buttons in the dashboard: explaining a
+roadmap item's scoring, creating/linking/transitioning a Jira issue, and
+running the Core Analysis Agent as part of a Zendesk sync. Previously the
+only way to trigger these was to switch to a chat client — the dashboard is
+now a first-class way to drive them.
+
+- **Dedup, not more duplication.** MCP's `mcp-server/tools/actions.ts` had
+  already duplicated `createJiraForRoadmapItem` out of
+  `app/api/roadmap/route.ts` (that route pulls in `requireAdminAuth()`, which
+  a standalone MCP process doesn't have), and `mcp-server/tools/explain.ts` /
+  `tools/sync.ts` held their own full implementations. Rather than write a
+  *third* copy for the new HTTP routes, the shared logic moved into
+  `lib/actions/roadmap-actions.ts`, `lib/actions/explain.ts`, and
+  `lib/actions/sync.ts`. MCP's tool files and the new API routes are now both
+  thin callers of one implementation each — verified against real production
+  data (KAN-2) post-move to confirm the relocation didn't change behavior,
+  including the create-Jira idempotency check (re-calling create on an
+  already-linked item returns the existing issue, never a duplicate).
+- New routes, both admin-gated the same way every other mutating route is
+  (`requireAdminAuth()` — real Supabase session, not an API key):
+  - `POST /api/roadmap/explain` — wraps `explainRoadmapItem`.
+  - `POST /api/jira` — action-discriminated (`create` | `link` | `transition`),
+    mirroring the existing `{action: "..."}` convention already used by
+    `/api/ingest`.
+- `POST /api/ingest {action:"sync_zendesk"}` gained an optional
+  `analyze: boolean` field (default `false`, preserving prior behavior) that
+  runs the Core Analysis Agent on newly-synced tickets and escalates
+  high-risk ones in Zendesk — the same opt-in the MCP tool already had.
+- UI: `components/dashboard/ExplainDialog.tsx` (first real usage of the
+  previously-unused `components/ui/dialog.tsx`) and
+  `components/dashboard/JiraActions.tsx`, both added to each roadmap kanban
+  card in `Roadmap.tsx`; an "Also analyze new tickets" checkbox added to
+  `IngestPanel.tsx`. Feedback stays inline status text under each
+  button/control — no new toast library, matching the app's existing
+  convention (`Admin.tsx`, `IngestPanel.tsx`).
+- Card action buttons/inputs call `stopPropagation` on pointerdown/click so
+  they don't trigger the kanban card's drag-and-drop handler.
+
 ## 2026-08-20 — Weekly Digest Agent: Vercel Cron + Resend email (`0febc4b` → `6408838`)
 
 First push-based surface — the dashboard and every MCP tool are pull-based

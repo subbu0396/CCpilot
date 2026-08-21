@@ -103,13 +103,16 @@ no duplicated data access:
   `get_roadmap`) call `loadDashboardBundle()` (`lib/store/dashboard-data.ts`)
   and mirror the dashboard components' own sort/cap logic, so an agent's
   answer matches what's on screen.
-- Write tools call the same integration functions the app uses:
-  `create_jira_issue`/`link_jira_issue`/`transition_jira_issue` wrap
-  `lib/integrations/jira.ts`; `sync_zendesk` wraps
-  `lib/ingestion/zendesk-live.ts` + `lib/store/feedback.ts`; `move_roadmap_item`
-  duplicates `app/api/roadmap/route.ts`'s bucket-move + Jira-auto-create logic
-  (not calling the route itself, since it's gated behind `requireAdminAuth()`,
-  a browser-session check a trusted local process doesn't need).
+- Write/action tools (`create_jira_issue`, `link_jira_issue`,
+  `transition_jira_issue`, `sync_zendesk`, `explain_roadmap_item`) are thin
+  wrappers over `lib/actions/roadmap-actions.ts`, `lib/actions/sync.ts`, and
+  `lib/actions/explain.ts` — the same implementations the dashboard's own
+  `/api/jira`, `/api/roadmap/explain`, and `/api/ingest` routes call (see
+  "Dashboard-triggered agent actions" below). `move_roadmap_item` is the one
+  exception still duplicating its bucket-move query directly in
+  `mcp-server/tools/actions.ts`, since `app/api/roadmap/route.ts`'s PATCH
+  handler is gated behind `requireAdminAuth()`, a browser-session check a
+  trusted local process doesn't need.
 - `explain_roadmap_item` recomputes the actual impact/effort scoring trail
   (`score = impact_score / EFFORT_MAP[effort_estimate]`, the real now/next/later
   thresholds from `lib/pipeline/roadmap.ts`) and reconciles it against the
@@ -131,6 +134,30 @@ there is available in every conversation, by platform design, not a fixable
 config detail.
 
 See `mcp-server/README.md` for the full tool table and setup instructions.
+
+## Dashboard-triggered agent actions
+
+The same actions available via MCP are also reachable directly from the
+dashboard UI — no chat client required:
+
+- **Explain** button on each roadmap card (`components/dashboard/ExplainDialog.tsx`,
+  first real usage of `components/ui/dialog.tsx`) calls
+  `POST /api/roadmap/explain`, which wraps `lib/actions/explain.ts`'s
+  `explainRoadmapItem`.
+- **Create/Link Jira, Transition status** (`components/dashboard/JiraActions.tsx`)
+  call `POST /api/jira` (`{action: "create" | "link" | "transition", ...}`,
+  the same discriminated-action convention `/api/ingest` already used),
+  which wraps `lib/actions/roadmap-actions.ts`.
+- **"Also analyze new tickets"** checkbox in `IngestPanel.tsx` passes
+  `analyze: true` through to `POST /api/ingest {action:"sync_zendesk"}`,
+  which now calls `lib/actions/sync.ts`'s `syncZendesk` (same function the
+  MCP `sync_zendesk` tool wraps) instead of a separate fetch+save path.
+
+All three new/changed routes are gated by the same `requireAdminAuth()` every
+other mutating route uses. Feedback is inline status text under each control
+(no toast library) — matching `Admin.tsx`/`IngestPanel.tsx`'s existing
+pattern; action buttons/inputs on roadmap cards call `stopPropagation` on
+pointerdown so they don't trigger the card's drag handler.
 
 ## Weekly Digest Agent
 
