@@ -37,6 +37,22 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     void refresh();
   }, []);
 
+  // Poll while the tab is visible so changes made outside this browser
+  // session — e.g. the Jira webhook auto-moving a roadmap item to Shipped
+  // when an issue is marked Done — show up without a manual refresh.
+  useEffect(() => {
+    const POLL_MS = 15000;
+    const tick = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+    const interval = setInterval(tick, POLL_MS);
+    document.addEventListener("visibilitychange", tick);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", tick);
+    };
+  }, []);
+
   const { registerCompanies } = useFilters();
   const realCompanies = useMemo(
     () => (data ? Array.from(new Set(data.feedback.map((f) => f.company))) : []),
