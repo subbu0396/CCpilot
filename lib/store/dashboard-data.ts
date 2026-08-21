@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/client";
 import type {
   FeedbackItem,
   PainPoint,
+  FeedbackTriage,
   ChurnSignal,
   Cluster,
   Feature,
@@ -15,6 +16,7 @@ import type {
 export interface DashboardBundle {
   feedback: FeedbackItem[];
   painPoints: PainPoint[];
+  feedbackTriage: FeedbackTriage[];
   churnSignals: ChurnSignal[];
   coreAnalysis: CoreAnalysis[];
   clusters: Cluster[];
@@ -53,6 +55,7 @@ export async function loadDashboardBundle(): Promise<DashboardBundle> {
     return {
       feedback: db.feedback_items,
       painPoints: db.pain_points,
+      feedbackTriage: db.feedback_triage,
       churnSignals: db.churn_signals,
       coreAnalysis: db.core_analysis,
       clusters,
@@ -72,6 +75,7 @@ export async function loadDashboardBundle(): Promise<DashboardBundle> {
   const [
     feedback,
     painPoints,
+    feedbackTriage,
     churnSignals,
     coreAnalysis,
     clustersRes,
@@ -82,6 +86,7 @@ export async function loadDashboardBundle(): Promise<DashboardBundle> {
   ] = await Promise.all([
     supabase.from("feedback_items").select("*"),
     supabase.from("pain_points").select("*"),
+    supabase.from("feedback_triage").select("*"),
     supabase.from("churn_signals").select("*"),
     supabase.from("core_analysis").select("*").order("created_at", { ascending: false }),
     supabase.from("clusters").select("*").order("created_at", { ascending: false }),
@@ -115,6 +120,7 @@ export async function loadDashboardBundle(): Promise<DashboardBundle> {
   return {
     feedback: (feedback.data ?? []) as FeedbackItem[],
     painPoints: (painPoints.data ?? []) as PainPoint[],
+    feedbackTriage: (feedbackTriage.data ?? []) as FeedbackTriage[],
     churnSignals: (churnSignals.data ?? []) as ChurnSignal[],
     coreAnalysis: (coreAnalysis.data ?? []) as CoreAnalysis[],
     clusters,

@@ -9,7 +9,9 @@ export type SignalType =
   | "none";
 export type EffortEstimate = "XS" | "S" | "M" | "L" | "XL";
 export type RoadmapBucket = "now" | "next" | "later" | "shipped";
+export type FeedbackType = "bug" | "feature_request" | "question" | "other";
 export type PipelineStage =
+  | "triage"
   | "pain_points"
   | "churn"
   | "cluster"
@@ -38,6 +40,15 @@ export interface PainPoint {
   sentiment: Sentiment;
   product_area: string;
   embedding?: number[] | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface FeedbackTriage {
+  id: string;
+  feedback_item_id: string;
+  feedback_type: FeedbackType;
+  rationale: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -148,6 +159,11 @@ export interface Database {
         Row: PainPoint;
         Insert: Omit<PainPoint, "id"> & { id?: string };
         Update: Partial<PainPoint>;
+      };
+      feedback_triage: {
+        Row: FeedbackTriage;
+        Insert: Omit<FeedbackTriage, "id"> & { id?: string };
+        Update: Partial<FeedbackTriage>;
       };
       churn_signals: {
         Row: ChurnSignal;

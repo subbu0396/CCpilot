@@ -3,7 +3,7 @@ import "dotenv/config";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { getPainPoints, getChurnRisk, getLiveAnalysis, getRoadmap } from "./tools/read";
+import { getPainPoints, getChurnRisk, getLiveAnalysis, getRoadmap, getTriageQueue } from "./tools/read";
 import { createJiraIssueTool, moveRoadmapItem, linkJiraIssue, transitionJiraIssueTool } from "./tools/actions";
 import { syncZendesk } from "./tools/sync";
 import { explainRoadmapItem } from "./tools/explain";
@@ -51,6 +51,19 @@ server.registerTool(
     },
   },
   async ({ limit, company }) => json(await getLiveAnalysis({ limit, company }))
+);
+
+server.registerTool(
+  "get_triage_queue",
+  {
+    description:
+      "Feedback classified as a feature request by the Feature-Request Triage Agent, not yet reflected as a standalone roadmap item lookup — useful to see what's been asked for that isn't on the radar yet. Optionally filter by company.",
+    inputSchema: {
+      limit: z.number().int().positive().max(50).optional().describe("Max rows to return (default 10)"),
+      company: z.string().optional().describe("Filter to a single company name"),
+    },
+  },
+  async ({ limit, company }) => json(await getTriageQueue({ limit, company }))
 );
 
 server.registerTool(

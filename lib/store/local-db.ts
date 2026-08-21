@@ -9,6 +9,7 @@ import { randomUUID } from "node:crypto";
 import type {
   FeedbackItem,
   PainPoint,
+  FeedbackTriage,
   ChurnSignal,
   Cluster,
   Feature,
@@ -21,6 +22,7 @@ import type {
 export interface LocalDb {
   feedback_items: FeedbackItem[];
   pain_points: PainPoint[];
+  feedback_triage: FeedbackTriage[];
   churn_signals: ChurnSignal[];
   core_analysis: CoreAnalysis[];
   clusters: Cluster[];
@@ -49,6 +51,7 @@ function emptyDb(): LocalDb {
   return {
     feedback_items: [],
     pain_points: [],
+    feedback_triage: [],
     churn_signals: [],
     core_analysis: [],
     clusters: [],
@@ -76,7 +79,9 @@ export function readDb(): LocalDb {
     writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
     return db;
   }
-  return JSON.parse(readFileSync(DB_PATH, "utf8")) as LocalDb;
+  const db = JSON.parse(readFileSync(DB_PATH, "utf8")) as LocalDb;
+  db.feedback_triage ??= [];
+  return db;
 }
 
 export function writeDb(db: LocalDb): void {

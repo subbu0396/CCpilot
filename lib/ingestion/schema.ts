@@ -29,6 +29,11 @@ export const PainPointOutputSchema = z.object({
   product_area: z.string().min(1),
 });
 
+export const TriageOutputSchema = z.object({
+  feedback_type: z.enum(["bug", "feature_request", "question", "other"]),
+  rationale: z.string().min(1),
+});
+
 export const ChurnOutputSchema = z.object({
   churn_risk: z.enum(["none", "low", "medium", "high"]),
   churn_signal: z.string(),

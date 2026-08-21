@@ -126,7 +126,7 @@ CCPilot, instead of CCPilot only ever pushing state out.
 `mcp-server/` is a second, much thinner consumer of the same backend the
 dashboard uses — a local [MCP](https://modelcontextprotocol.io) server (stdio
 transport, `mcp-server/index.ts`, run via `npm run mcp` / `tsx`) that exposes
-11 tools to Claude Desktop/Code, so churn risk, pain points, roadmap, and
+12 tools to Claude Desktop/Code, so churn risk, pain points, roadmap, and
 Jira/Zendesk are queryable and actionable from natural language instead of
 only through the dashboard UI. It's excluded from the Next.js build
 (`tsconfig.json`'s `exclude`) and has its own minimal `tsconfig.json`.
@@ -234,11 +234,21 @@ days, and this week's escalation count.
 
 Stages are **independently re-runnable** and **idempotent** (each overwrites only its own tables/columns):
 
+0. **Triage** (Feature-Request Triage Agent) — Claude classifies each feedback item `bug | feature_request | question | other` → `feedback_triage`, one row per feedback item (upsert by `feedback_item_id`, same as pain_points below)
 1. **Pain points** — Claude extracts summary, severity, sentiment, product area → `pain_points`
 2. **Churn** — Claude classifies risk + signal type; tickets 2×, 1–2★ 1.5× → `churn_signals`
-3. **Cluster** — Voyage embeddings → pgvector; `ml-kmeans` (default k=8); Claude labels → `clusters`
+3. **Cluster** — Voyage embeddings → pgvector; `ml-kmeans` (default k=8); Claude labels → `clusters`. Excludes pain points whose feedback item was triaged `bug`/`question` (untriaged items are included by default — only explicit exclusions are filtered).
 4. **Features** — 1–3 features per cluster with impact/effort → `features`
 5. **Roadmap** — Now / Next / Later by impact÷effort → `roadmap`
+
+Triage is intentionally decoupled from pain-point/churn extraction — a bug
+report still gets full severity/churn visibility, it's only excluded from
+becoming a candidate roadmap *feature*. This is a different, cleaner
+classifier than the real-time Core Analysis Agent's `category` field
+(`FEATURE_REQUEST`/`BUG`/`UI/UX`/`PERFORMANCE`/`BILLING`/`OTHER`, which mixes
+"type" with "product area" and only runs per-webhook-event, fully
+disconnected from the batch pipeline) — see "Real-time analysis" above for
+that one.
 
 All Claude system prompts use **Anthropic prompt caching** to control cost at scale.
 

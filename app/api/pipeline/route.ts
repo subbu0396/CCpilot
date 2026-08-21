@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { runTriage } from "@/lib/pipeline/triage";
 import { runPainPoints } from "@/lib/pipeline/pain-points";
 import { runChurn } from "@/lib/pipeline/churn";
 import { runClustering } from "@/lib/pipeline/cluster";
@@ -28,6 +29,9 @@ export async function POST(req: NextRequest) {
 
     let result;
     switch (stage) {
+      case "triage":
+        result = await runTriage({ company });
+        break;
       case "pain_points":
         result = await runPainPoints({ company });
         break;
@@ -45,6 +49,7 @@ export async function POST(req: NextRequest) {
         break;
       case "all":
         result = {
+          triage: await runTriage({ company }),
           pain_points: await runPainPoints({ company }),
           churn: await runChurn({ company }),
           cluster: await runClustering({ k }),

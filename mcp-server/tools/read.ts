@@ -89,6 +89,35 @@ export async function getLiveAnalysis({
     .slice(0, limit);
 }
 
+export async function getTriageQueue({
+  limit = 10,
+  company,
+}: {
+  limit?: number;
+  company?: string;
+}) {
+  const { feedback, feedbackTriage } = await loadDashboardBundle();
+  const fbById = new Map(feedback.map((f) => [f.id, f]));
+
+  return feedbackTriage
+    .filter((t) => t.feedback_type === "feature_request")
+    .map((t) => {
+      const fb = fbById.get(t.feedback_item_id);
+      if (!fb) return null;
+      if (company && fb.company !== company) return null;
+      return {
+        company: fb.company,
+        source: fb.source,
+        timestamp: fb.timestamp,
+        rationale: t.rationale,
+        quote: fb.text,
+      };
+    })
+    .filter((r): r is NonNullable<typeof r> => r !== null)
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, limit);
+}
+
 export async function getRoadmap({ bucket }: { bucket?: RoadmapBucket }) {
   const { roadmap, features } = await loadDashboardBundle();
   const featureById = new Map(features.map((f) => [f.id, f]));

@@ -3,6 +3,70 @@
 Running log of what changed and why, newest first. For full detail see the
 commit each entry references.
 
+## 2026-08-22 — Feature-Request Triage Agent
+
+Bug reports, feature requests, and plain questions were all treated
+uniformly by the batch pipeline — every feedback item went through
+pain-point/churn scoring and could end up in the same cluster that
+`runFeatures()` turns into a candidate roadmap item, regardless of whether
+it was actually a feature idea, a bug complaint, or someone asking how
+something works. A `category` classifier already existed
+(`CoreAnalysisOutputSchema`'s `FEATURE_REQUEST`/`BUG`/etc.), but it's
+real-time-webhook-only, fully disconnected from the batch pipeline, and
+mixes "type" values with "product area" values in one 6-way enum — not a
+clean type classifier to reuse.
+
+- New pipeline stage, `lib/pipeline/triage.ts` (`runTriage`), classifies
+  each feedback item into a clean `bug | feature_request | question |
+  other`, one Claude call per item (same `mapWithConcurrency`/`startJob`/
+  `finishJob` pattern as `pain-points.ts`, heuristic keyword fallback when
+  no API key), upserted into a new `feedback_triage` table by
+  `feedback_item_id` (idempotent re-runs, verified).
+- `lib/pipeline/cluster.ts`'s `loadPainPoints()` now excludes pain points
+  whose feedback item was explicitly triaged `bug` or `question` before
+  embedding/k-means — so `runFeatures()`/`runRoadmap()` only ever build
+  roadmap items from feature-request-shaped feedback. Bug reports still get
+  full pain-point/churn scoring and stay visible on Pain Points/Churn Risk —
+  they're just excluded from becoming candidate "features." An **untriaged**
+  feedback item (triage never run, or hasn't reached it) is included by
+  default — the filter only excludes items explicitly triaged out, so
+  historical data isn't silently dropped from clustering.
+- New stage wired into every existing dispatch point the same way as the
+  other 5 stages: `app/api/pipeline/route.ts`'s switch (and the `"all"`
+  sequence, running first), `scripts/run-pipeline.ts`'s `--stage` dispatch,
+  `Admin.tsx`'s `STAGES` table (existing re-run-button/job-history UI picks
+  it up automatically, no new UI code).
+- New MCP read tool, `get_triage_queue`, surfaces feature-request-tagged
+  feedback by company — "what's been asked for that isn't on the roadmap
+  yet" — via `loadDashboardBundle()`'s new `feedbackTriage` field (loaded
+  the same way `coreAnalysis` already is).
+- `supabase/migrations/005_feedback_triage.sql` — two things worth noting:
+  the new table, **and** `alter type pipeline_stage add value if not exists
+  'triage'`. `pipeline_jobs.stage` is a real Postgres enum (unlike
+  `roadmap.bucket`, which is a text `check` constraint) — missed this on the
+  first pass, caught when `runTriage()` failed against production with
+  `invalid input value for enum pipeline_stage: "triage"`; fixed by adding
+  the `ALTER TYPE` statement (must run as its own statement, not batched
+  into a transaction with other DDL, since Postgres historically didn't
+  allow using a new enum value in the same transaction that added it).
+- Verified against real production data: ran triage for two companies (156
+  real Flowdesk feedback items, spot-checked classifications against the
+  actual text — bug/feature_request/other all came back sensible; this
+  dataset had zero clear "question"-type items, plausible for review/ticket
+  text), confirmed idempotent re-runs (no duplicate rows), confirmed the
+  clustering filter's set logic directly against real `pain_points`/
+  `feedback_triage` data (66 of 456 pain points correctly excluded, all
+  untriaged items correctly retained), and confirmed `get_triage_queue`
+  returns real feature-request feedback cross-checked against a direct
+  Supabase count.
+- **Not re-running `cluster`/`features`/`roadmap` against production** as
+  part of this change (deliberate, matches this session's established
+  caution) — doing so would delete/reinsert clusters/features/roadmap rows
+  with new IDs, orphaning the roadmap items already linked to real Jira
+  issues (KAN-1/2/3). The triage stage and filter logic are verified and
+  live; actually exercising the filter in a real `runClustering()` call
+  needs your separate explicit confirmation first.
+
 ## 2026-08-21 — Customer Health Briefing Agent + Jira→CCPilot feedback loop
 
 Two more agents, following the same `lib/actions/*` shared-logic pattern as

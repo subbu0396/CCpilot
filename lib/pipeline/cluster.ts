@@ -50,20 +50,51 @@ async function voyageEmbed(texts: string[]): Promise<number[][]> {
   return (res.data ?? []).map((d) => d.embedding as number[]);
 }
 
+/**
+ * Feedback items explicitly triaged "bug" or "question" (Feature-Request
+ * Triage Agent, lib/pipeline/triage.ts) shouldn't become candidate roadmap
+ * features. A feedback item with no triage row yet (triage never run, or
+ * hasn't reached it) is included by default — this only excludes items
+ * explicitly triaged out, so untriaged historical data isn't dropped.
+ */
+async function excludedFromClustering(): Promise<Set<string>> {
+  if (isLocalMode()) {
+    const db = readDb();
+    return new Set(
+      db.feedback_triage
+        .filter((t) => t.feedback_type === "bug" || t.feedback_type === "question")
+        .map((t) => t.feedback_item_id)
+    );
+  }
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("feedback_triage")
+    .select("feedback_item_id, feedback_type")
+    .in("feedback_type", ["bug", "question"]);
+  if (error) throw new Error(error.message);
+  const rows = (data ?? []) as { feedback_item_id: string; feedback_type: string }[];
+  return new Set(rows.map((r) => r.feedback_item_id));
+}
+
 async function loadPainPoints(): Promise<
   (PainPoint & { feedback_text?: string })[]
 > {
+  const excluded = await excludedFromClustering();
+
   if (isLocalMode()) {
     const db = readDb();
-    return db.pain_points.map((p) => {
-      const fb = db.feedback_items.find((f) => f.id === p.feedback_item_id);
-      return { ...p, feedback_text: fb?.text };
-    });
+    return db.pain_points
+      .filter((p) => !excluded.has(p.feedback_item_id))
+      .map((p) => {
+        const fb = db.feedback_items.find((f) => f.id === p.feedback_item_id);
+        return { ...p, feedback_text: fb?.text };
+      });
   }
   const supabase = createServiceClient();
   const { data, error } = await supabase.from("pain_points").select("*");
   if (error) throw new Error(error.message);
-  return (data ?? []) as PainPoint[];
+  const rows = (data ?? []) as PainPoint[];
+  return rows.filter((p) => !excluded.has(p.feedback_item_id));
 }
 
 function heuristicLabel(

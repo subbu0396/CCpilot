@@ -8,6 +8,7 @@
 import { config } from "dotenv";
 config({ path: ".env.local" });
 
+import { runTriage } from "../lib/pipeline/triage";
 import { runPainPoints } from "../lib/pipeline/pain-points";
 import { runChurn } from "../lib/pipeline/churn";
 import { runClustering } from "../lib/pipeline/cluster";
@@ -30,6 +31,11 @@ async function main() {
     `Pipeline starting (ANTHROPIC=${Boolean(process.env.ANTHROPIC_API_KEY)}, VOYAGE=${Boolean(process.env.VOYAGE_API_KEY)})`
   );
 
+  if (!stage || stage === "triage") {
+    const r = await runTriage({ company, limit });
+    console.log("triage:", r);
+    if (stage) return;
+  }
   if (!stage || stage === "pain_points") {
     const r = await runPainPoints({ company, limit });
     console.log("pain_points:", r);

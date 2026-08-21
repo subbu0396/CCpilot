@@ -20,6 +20,7 @@ import { adminFetch } from "@/lib/auth/admin-client";
 import { SectionHeader } from "./shared/SectionHeader";
 
 const STAGES: { stage: PipelineStage; label: string }[] = [
+  { stage: "triage", label: "Feedback triage" },
   { stage: "pain_points", label: "Pain point extraction" },
   { stage: "churn", label: "Churn risk scoring" },
   { stage: "cluster", label: "Embedding + clustering" },
