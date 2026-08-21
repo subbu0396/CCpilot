@@ -99,6 +99,7 @@ export function Roadmap() {
       manually_overridden: boolean;
       jira_issue_key: string | null;
       jira_issue_url: string | null;
+      jira_status: string | null | undefined;
       feature: { feature_name: string; impact_score: number; effort_estimate: string };
       clusterLabel: string;
     }>;
@@ -109,7 +110,7 @@ export function Roadmap() {
     const activeId = String(event.active.id);
     if (!overId) return;
     const bucket = String(overId) as RoadmapBucket;
-    if (!["now", "next", "later"].includes(bucket)) return;
+    if (!["now", "next", "later", "shipped"].includes(bucket)) return;
     const item = items.find((i) => i.id === activeId);
     if (!item || item.bucket === bucket) return;
 
@@ -153,7 +154,7 @@ export function Roadmap() {
     <section>
       <SectionHeader
         title="Roadmap"
-        subtitle="Now / Next / Later — drag to override Claude placement"
+        subtitle="Now / Next / Later / Shipped — drag to override, or let a linked Jira issue reaching Done move it to Shipped automatically"
         action={
           <div className="flex gap-2">
             <Button
@@ -183,8 +184,8 @@ export function Roadmap() {
       />
 
       <DndContext sensors={sensors} onDragEnd={(e) => void onDragEnd(e)}>
-        <div className={`grid gap-3 lg:grid-cols-3 ${busy ? "opacity-70" : ""}`}>
-          {(["now", "next", "later"] as RoadmapBucket[]).map((bucket) => (
+        <div className={`grid gap-3 lg:grid-cols-4 ${busy ? "opacity-70" : ""}`}>
+          {(["now", "next", "later", "shipped"] as RoadmapBucket[]).map((bucket) => (
             <Column
               key={bucket}
               id={bucket}
@@ -217,6 +218,11 @@ export function Roadmap() {
                             {i.jira_issue_key}
                           </Badge>
                         </a>
+                      )}
+                      {i.jira_status && (
+                        <Badge variant="outline" className="text-slate-500">
+                          {i.jira_status}
+                        </Badge>
                       )}
                     </div>
                     <div className="mt-2 flex items-center gap-1.5">

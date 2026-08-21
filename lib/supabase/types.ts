@@ -8,7 +8,7 @@ export type SignalType =
   | "frustration_escalation"
   | "none";
 export type EffortEstimate = "XS" | "S" | "M" | "L" | "XL";
-export type RoadmapBucket = "now" | "next" | "later";
+export type RoadmapBucket = "now" | "next" | "later" | "shipped";
 export type PipelineStage =
   | "pain_points"
   | "churn"
@@ -86,6 +86,7 @@ export interface RoadmapItem {
   run_id: string;
   jira_issue_key: string | null;
   jira_issue_url: string | null;
+  jira_status?: string | null;
   created_at?: string;
   updated_at?: string;
 }

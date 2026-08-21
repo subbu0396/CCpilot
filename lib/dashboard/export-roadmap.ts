@@ -27,7 +27,7 @@ export function roadmapToMarkdown(
     effort_estimate: string;
   }[]
 ): string {
-  const sections = ["now", "next", "later"] as const;
+  const sections = ["now", "next", "later", "shipped"] as const;
   let md = `# Product Roadmap\n\nGenerated ${new Date().toISOString()}\n\n`;
   for (const s of sections) {
     md += `## ${s.charAt(0).toUpperCase() + s.slice(1)}\n\n`;

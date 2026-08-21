@@ -157,7 +157,7 @@ export async function runRoadmap(): Promise<{
     const byName = new Map(features.map((f) => [f.feature_name, f]));
     const items: RoadmapItem[] = [];
     let order = 0;
-    for (const bucket of ["now", "next", "later"] as RoadmapBucket[]) {
+    for (const bucket of ["now", "next", "later"] as const) {
       for (const entry of buckets[bucket]) {
         const feature = byName.get(entry.feature_name);
         if (!feature) continue;

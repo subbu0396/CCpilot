@@ -19,8 +19,8 @@ export async function moveRoadmapItem({
   roadmap_id: string;
   bucket: RoadmapBucket;
 }) {
-  if (!["now", "next", "later"].includes(bucket)) {
-    throw new Error(`Invalid bucket "${bucket}" — must be now, next, or later.`);
+  if (!["now", "next", "later", "shipped"].includes(bucket)) {
+    throw new Error(`Invalid bucket "${bucket}" — must be now, next, later, or shipped.`);
   }
 
   let updated: RoadmapItem;

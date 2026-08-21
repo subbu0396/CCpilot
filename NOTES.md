@@ -3,6 +3,79 @@
 Running log of what changed and why, newest first. For full detail see the
 commit each entry references.
 
+## 2026-08-21 — Customer Health Briefing Agent + Jira→CCPilot feedback loop
+
+Two more agents, following the same `lib/actions/*` shared-logic pattern as
+everything else this session.
+
+**Customer Health Briefing Agent** — a per-company rollup (churn risk
+breakdown, top 5 pain points, escalations in the last 30 days, and roadmap
+items affecting that company with their linked Jira issues), useful to prep
+before an account call. `lib/actions/health.ts`'s `getCustomerHealthBriefing`
+is the single implementation behind both `get_customer_health` (MCP tool)
+and `GET /api/customer-health?company=X` (public — pure data assembly, no
+Claude/Jira/Zendesk cost or write risk, same reasoning as `/api/dashboard`
+being public). New dashboard panel: `components/dashboard/CustomerHealth.tsx`,
+a company selector + four rollup cards, added as a new view alongside the
+other 8 sections. `company` only lives on `FeedbackItem` — every other table
+(pain points, churn signals, escalations) joins to it via `feedback_item_id`;
+roadmap items reach it through a 4-hop chain
+(`RoadmapItem → Feature → Cluster → feedback_clusters → FeedbackItem.company`),
+the same join `lib/actions/explain.ts`'s `clusterChurnRisk()` already walks
+for churn aggregation, extended here with a company lookup. Verified against
+real production data for 3 companies, cross-checking the churn-count rollup
+against a direct filter for the same company.
+
+**Jira→CCPilot feedback loop** — until now the sync was one-directional
+(`transition_jira_issue` pushes CCPilot state → Jira). This closes the loop:
+an inbound `POST /api/webhooks/jira` reacts when a linked Jira issue's status
+changes, and auto-moves the roadmap item to a new **4th bucket, "Shipped"**,
+when the issue reaches Jira's "Done" **status category** (not name-matching
+against "Done"/"Resolved"/"Closed" strings — Jira's `statusCategory.key` is
+one of `new`/`indeterminate`/`done` and is stable across custom workflow
+status names). The item's raw Jira status name is always recorded in a new
+`jira_status` column regardless of category, so "In Progress" etc. shows up
+on the card even when it doesn't trigger a bucket move.
+
+- `supabase/migrations/004_roadmap_shipped.sql` — widened the `bucket` check
+  constraint to include `'shipped'`, added `jira_status text null`. Applied
+  manually via the Supabase SQL editor (same as every migration before it —
+  this project has no direct Postgres connection configured, only the
+  Supabase JS client, so DDL can't run from a script).
+- **Registering the webhook is also a manual step.** Jira Cloud's REST
+  webhook-registration endpoint (`POST /rest/api/3/webhook`) requires
+  Connect/Forge app-level auth — a personal API token (what
+  `lib/integrations/jira.ts` already uses for everything else) can't call it.
+  Has to be registered in Jira's admin UI (Settings → System → WebHooks).
+  Jira's webhook form also has no auth-header field like Zendesk's, so the
+  shared secret is embedded in the webhook URL's query string instead:
+  `.../api/webhooks/jira?token=<JIRA_WEBHOOK_SECRET>`
+  (`lib/ingestion/jira-webhook.ts`'s `verifyJiraWebhookToken`, same
+  `timingSafeEqual` comparison as `verifyZendeskBearerToken`, just reading a
+  query param instead of a header).
+- `lib/actions/roadmap-actions.ts` gained `getRoadmapItemByJiraKey` and
+  `syncRoadmapFromJiraStatus` — the reverse direction of
+  `createJiraForRoadmapItem`/`transitionJiraForRoadmap`. When the target
+  roadmap item is already `manually_overridden` (e.g. a human already
+  bucket-moved it), the auto-shipped move still applies — a Done Jira status
+  is treated as a stronger, more concrete signal than the pipeline's own
+  scoring, same as a human drag would be.
+- Every hardcoded `["now","next","later"]` bucket list got `"shipped"` added:
+  `app/api/roadmap/route.ts`'s PATCH validation, `mcp-server/tools/actions.ts`'s
+  `moveRoadmapItem`, `mcp-server/index.ts`'s two tool schemas,
+  `lib/dashboard/export-roadmap.ts`'s CSV/Markdown export sections, and the
+  Roadmap kanban board (`lg:grid-cols-3` → `lg:grid-cols-4`). The scoring
+  pipeline itself (`lib/pipeline/roadmap.ts`) needed no change — it only ever
+  assigns now/next/later; "shipped" is exclusively webhook-driven.
+- Verified against real production data via a temp script (deleted after
+  use): confirmed a non-done status update only sets `jira_status` and
+  leaves `bucket` untouched, a done status update moves `bucket` to
+  `"shipped"` and sets `manually_overridden`, and restored the tested
+  roadmap item's original state afterward so the verification run didn't
+  leave production data altered. Also curl-tested the webhook route's auth:
+  missing/wrong token → 401, correct token → 200 (no-op for issues not
+  linked to any roadmap item).
+
 ## 2026-08-21 — MCP agents surfaced in the dashboard UI
 
 Five agent actions previously reachable only via the `ccpilot` MCP server

@@ -10,6 +10,7 @@ export const VIEWS = [
   { id: "clusters", label: "Clusters" },
   { id: "features", label: "Features" },
   { id: "roadmap", label: "Roadmap" },
+  { id: "customer-health", label: "Customer Health" },
   { id: "admin", label: "Admin / Pipeline" },
 ] as const;
 

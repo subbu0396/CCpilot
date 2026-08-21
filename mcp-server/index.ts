@@ -7,6 +7,7 @@ import { getPainPoints, getChurnRisk, getLiveAnalysis, getRoadmap } from "./tool
 import { createJiraIssueTool, moveRoadmapItem, linkJiraIssue, transitionJiraIssueTool } from "./tools/actions";
 import { syncZendesk } from "./tools/sync";
 import { explainRoadmapItem } from "./tools/explain";
+import { getCustomerHealthBriefing } from "./tools/health";
 
 const server = new McpServer({ name: "ccpilot", version: "0.1.0" });
 
@@ -58,7 +59,7 @@ server.registerTool(
     description:
       "Roadmap items (Now/Next/Later) with their linked feature name, impact score, and any linked Jira issue.",
     inputSchema: {
-      bucket: z.enum(["now", "next", "later"]).optional().describe("Filter to one bucket"),
+      bucket: z.enum(["now", "next", "later", "shipped"]).optional().describe("Filter to one bucket"),
     },
   },
   async ({ bucket }) => json(await getRoadmap({ bucket }))
@@ -86,7 +87,7 @@ server.registerTool(
       "Move a roadmap item into now/next/later. Moving into \"now\" auto-creates a linked Jira issue (if JIRA_* env vars are set and one doesn't already exist), matching the dashboard's drag-and-drop behavior.",
     inputSchema: {
       roadmap_id: z.string().describe("The roadmap item's id"),
-      bucket: z.enum(["now", "next", "later"]),
+      bucket: z.enum(["now", "next", "later", "shipped"]),
     },
   },
   async ({ roadmap_id, bucket }) => json(await moveRoadmapItem({ roadmap_id, bucket }))
@@ -145,6 +146,18 @@ server.registerTool(
   },
   async ({ roadmap_id, compare_to_id }) =>
     json(await explainRoadmapItem({ roadmap_id, compare_to_id }))
+);
+
+server.registerTool(
+  "get_customer_health",
+  {
+    description:
+      "Per-company health briefing: churn risk breakdown, top pain points, escalations in the last 30 days, and any roadmap items (with linked Jira issues) affecting this company's feedback. Useful to prep before an account call.",
+    inputSchema: {
+      company: z.string().describe("Company name, e.g. \"Trackr\""),
+    },
+  },
+  async ({ company }) => json(await getCustomerHealthBriefing({ company }))
 );
 
 async function main() {

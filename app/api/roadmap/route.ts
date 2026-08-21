@@ -31,7 +31,7 @@ export async function PATCH(req: NextRequest) {
     const bucket = body.bucket as RoadmapBucket;
     const sort_order = Number(body.sort_order ?? 0);
 
-    if (!["now", "next", "later"].includes(bucket)) {
+    if (!["now", "next", "later", "shipped"].includes(bucket)) {
       return NextResponse.json({ error: "invalid bucket" }, { status: 400 });
     }
 

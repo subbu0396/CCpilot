@@ -24,6 +24,7 @@ extra server to deploy, no new auth to manage.
 | `link_jira_issue` | Attach an existing Jira issue key/url to a roadmap item, without creating a new one (use instead of `move_roadmap_item` when a ticket already exists for the same work). `{ roadmap_id, jira_issue_key, jira_issue_url }` |
 | `sync_zendesk` | Pull latest tickets/comments from Zendesk and upsert them as feedback items, same as the dashboard's "Sync" button. Pass `analyze: true` to also run the Core Analysis Agent (scoring + priority escalation) on newly-synced tickets — opt-in, off by default. `{ company?, analyze? }` |
 | `explain_roadmap_item` | Explains why a roadmap item is in its bucket, grounded in the real impact/effort/churn scoring math (not just the stored one-line rationale). Pass `compare_to_id` to explain why one item outranks another. `{ roadmap_id, compare_to_id? }` |
+| `get_customer_health` | Per-company briefing: churn risk breakdown, top pain points, escalations in the last 30 days, and roadmap items (with linked Jira issues) affecting that company. `{ company }` |
 
 ## Running it
 

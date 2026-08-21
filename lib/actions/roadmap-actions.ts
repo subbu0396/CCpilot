@@ -13,6 +13,74 @@ export async function getRoadmapItem(roadmapId: string): Promise<RoadmapItem | n
   return (data as RoadmapItem | null) ?? null;
 }
 
+export async function getRoadmapItemByJiraKey(jiraIssueKey: string): Promise<RoadmapItem | null> {
+  if (isLocalMode()) {
+    const db = readDb();
+    return db.roadmap.find((r) => r.jira_issue_key === jiraIssueKey) ?? null;
+  }
+  const supabase = createServiceClient();
+  const { data } = await supabase
+    .from("roadmap")
+    .select("*")
+    .eq("jira_issue_key", jiraIssueKey)
+    .maybeSingle();
+  return (data as RoadmapItem | null) ?? null;
+}
+
+/**
+ * Jira -> CCPilot direction of the feedback loop (the reverse of
+ * transitionJiraForRoadmap/createJiraForRoadmapItem, which push CCPilot
+ * state into Jira). Called from the Jira webhook route when a linked
+ * issue's status changes. No-op (returns null) if the issue isn't linked
+ * to any roadmap item. Always records the raw status name; only moves the
+ * bucket to "shipped" when Jira's status category is "done" — status
+ * category is stable across custom workflow status names, unlike matching
+ * on "Done"/"Resolved"/"Closed" strings. manually_overridden is set the
+ * same way moveRoadmapItem's human drag-and-drop already does, so a
+ * subsequent roadmap pipeline re-run's fresh items don't silently
+ * overwrite it within the same run.
+ */
+export async function syncRoadmapFromJiraStatus({
+  jira_issue_key,
+  status_name,
+  status_category,
+}: {
+  jira_issue_key: string;
+  status_name: string;
+  status_category?: string;
+}): Promise<RoadmapItem | null> {
+  const item = await getRoadmapItemByJiraKey(jira_issue_key);
+  if (!item) return null;
+
+  const patch: Partial<RoadmapItem> = {
+    jira_status: status_name,
+    updated_at: new Date().toISOString(),
+  };
+  if (status_category === "done" && item.bucket !== "shipped") {
+    patch.bucket = "shipped";
+    patch.manually_overridden = true;
+  }
+
+  if (isLocalMode()) {
+    const db = readDb();
+    const idx = db.roadmap.findIndex((r) => r.id === item.id);
+    if (idx < 0) return null;
+    db.roadmap[idx] = { ...db.roadmap[idx], ...patch };
+    writeDb(db);
+    return db.roadmap[idx];
+  }
+
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("roadmap")
+    .update(patch as never)
+    .eq("id", item.id)
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  return data as RoadmapItem;
+}
+
 export async function createJiraIssueStandalone({
   summary,
   description,

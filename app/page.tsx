@@ -7,6 +7,7 @@ import { LiveAnalysis } from "@/components/dashboard/LiveAnalysis";
 import { Clusters } from "@/components/dashboard/Clusters";
 import { Features } from "@/components/dashboard/Features";
 import { Roadmap } from "@/components/dashboard/Roadmap";
+import { CustomerHealth } from "@/components/dashboard/CustomerHealth";
 import { Admin } from "@/components/dashboard/Admin";
 import { useDashboard } from "@/components/dashboard/DashboardProvider";
 import { useView } from "@/components/dashboard/ViewProvider";
@@ -21,6 +22,7 @@ const SECTIONS = {
   clusters: Clusters,
   features: Features,
   roadmap: Roadmap,
+  "customer-health": CustomerHealth,
   admin: Admin,
 } as const;
 
@@ -39,6 +41,8 @@ const VIEW_HEADLINES: Record<keyof typeof SECTIONS, string> = {
     "Proposed features scored by impact vs. effort, generated from the clustered themes.",
   roadmap:
     "Now / Next / Later prioritization by impact-to-effort ratio — drag to override.",
+  "customer-health":
+    "Churn risk, top pain points, recent escalations, and roadmap standing for one company — prep before an account call.",
   admin:
     "Pipeline status, re-run controls, and ingest health for the underlying data.",
 };

@@ -86,12 +86,47 @@ This project has **no GitHub-integration auto-deploy on Vercel** (confirmed via 
 
 Dragging a roadmap card into **Now** (`PATCH /api/roadmap`) auto-creates a real Jira issue via `lib/integrations/jira.ts` (`hasJiraCreds`, `createJiraIssue`) — direct REST API v3 (`POST /rest/api/3/issue`) with Basic Auth (`email:apiToken`), the same server-to-server pattern as the Zendesk OAuth client, no Zapier/Make in between. Best-effort (try/catch, logs and continues) and short-circuits if the roadmap row already has a `jira_issue_key`, so re-dragging the same card doesn't create duplicates. `JIRA_BASE_URL`/`JIRA_EMAIL`/`JIRA_API_TOKEN`/`JIRA_PROJECT_KEY`/`JIRA_ISSUE_TYPE` (optional, defaults to `Task`) in env. `JIRA_PROJECT_KEY` must be an actual Jira Software/Work Management project's key (visible in Jira's Spaces/Projects list, e.g. `KAN`) — not an Atlassian Home "initiative" page, which looks similar in the UI but has no issue tracker and returns the same permissions-style error from the API either way.
 
+## Jira → CCPilot feedback loop
+
+The reverse direction of the Jira integration above: `POST /api/webhooks/jira`
+reacts when a linked Jira issue's status changes and reflects it back into
+CCPilot, instead of CCPilot only ever pushing state out.
+
+- A 4th roadmap bucket, **`shipped`**, exists purely for this loop — the
+  scoring pipeline (`lib/pipeline/roadmap.ts`) never assigns it, only the
+  webhook does, when a linked issue's Jira **status category** (`new` /
+  `indeterminate` / `done` — stable across custom workflow status names,
+  unlike matching literal status text) reaches `done`. The item's raw status
+  name is always recorded in a `jira_status` column regardless of category,
+  so intermediate statuses ("In Progress") are visible without triggering a
+  bucket move. `supabase/migrations/004_roadmap_shipped.sql` widened the
+  `bucket` check constraint and added the column — applied manually via the
+  Supabase SQL editor, same as every migration before it (no direct Postgres
+  connection is configured in this project, only the Supabase JS client).
+- `lib/actions/roadmap-actions.ts`'s `getRoadmapItemByJiraKey` +
+  `syncRoadmapFromJiraStatus` are the reverse of
+  `createJiraForRoadmapItem`/`transitionJiraForRoadmap`. A done-status update
+  sets `manually_overridden: true` the same way a human drag already does —
+  Jira reaching Done is treated as a strong enough signal to apply even over
+  an existing manual placement.
+- **Registering the webhook is a manual, admin-UI-only step** — Jira Cloud's
+  REST webhook-registration endpoint requires Connect/Forge app auth, which a
+  personal API token (everything else in `lib/integrations/jira.ts` uses)
+  can't call. Register it in Jira Settings → System → WebHooks, filtered to
+  the "Issue updated" event. Jira's webhook form also has no auth-header
+  field like Zendesk's, so the shared secret is embedded in the target URL's
+  query string instead: `.../api/webhooks/jira?token=<JIRA_WEBHOOK_SECRET>`
+  (`lib/ingestion/jira-webhook.ts`'s `verifyJiraWebhookToken`, the same
+  `timingSafeEqual` comparison pattern as `verifyZendeskBearerToken`, just
+  reading a query param instead of a header since Jira offers no header
+  config).
+
 ## MCP server (agent interface)
 
 `mcp-server/` is a second, much thinner consumer of the same backend the
 dashboard uses — a local [MCP](https://modelcontextprotocol.io) server (stdio
 transport, `mcp-server/index.ts`, run via `npm run mcp` / `tsx`) that exposes
-10 tools to Claude Desktop/Code, so churn risk, pain points, roadmap, and
+11 tools to Claude Desktop/Code, so churn risk, pain points, roadmap, and
 Jira/Zendesk are queryable and actionable from natural language instead of
 only through the dashboard UI. It's excluded from the Next.js build
 (`tsconfig.json`'s `exclude`) and has its own minimal `tsconfig.json`.
@@ -152,6 +187,19 @@ dashboard UI — no chat client required:
   `analyze: true` through to `POST /api/ingest {action:"sync_zendesk"}`,
   which now calls `lib/actions/sync.ts`'s `syncZendesk` (same function the
   MCP `sync_zendesk` tool wraps) instead of a separate fetch+save path.
+- **Customer Health** view (`components/dashboard/CustomerHealth.tsx`) calls
+  `GET /api/customer-health?company=X`, which wraps
+  `lib/actions/health.ts`'s `getCustomerHealthBriefing` (same function the
+  MCP `get_customer_health` tool wraps) — a per-company rollup of churn risk,
+  top pain points, escalations in the last 30 days, and affected roadmap
+  items with their linked Jira issues. Unlike the other new routes, this one
+  is **public** (no `requireAdminAuth`) — it's pure data assembly with no
+  Claude/Jira/Zendesk call and no write, the same reasoning `GET /api/dashboard`
+  already uses. `company` only lives on `FeedbackItem`; everything else joins
+  to it via `feedback_item_id`, and roadmap items reach it through a 4-hop
+  chain (`RoadmapItem → Feature → Cluster → feedback_clusters →
+  FeedbackItem.company`) — the same join `explain.ts`'s `clusterChurnRisk()`
+  already does for churn aggregation, extended with a company lookup.
 
 All three new/changed routes are gated by the same `requireAdminAuth()` every
 other mutating route uses. Feedback is inline status text under each control
