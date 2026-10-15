@@ -11,6 +11,11 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  // No Supabase auth cookie → nothing to refresh, skip the network round-trip.
+  if (!request.cookies.getAll().some((c) => c.name.startsWith("sb-"))) {
+    return response;
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -32,7 +37,19 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  await supabase.auth.getClaims();
+  // Bound the refresh so an unreachable Supabase can't hang every request
+  // into a MIDDLEWARE_INVOCATION_TIMEOUT. On failure the page still renders;
+  // the session just isn't refreshed this time.
+  try {
+    await Promise.race([
+      supabase.auth.getClaims(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Supabase session refresh timed out")), 3000)
+      ),
+    ]);
+  } catch (err) {
+    console.error("[middleware]", err);
+  }
 
   return response;
 }
